@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 
+from delta import configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
 
 
@@ -39,7 +40,7 @@ def get_spark_session(
     if warehouse_dir:
         builder = builder.config("spark.sql.warehouse.dir", warehouse_dir)
 
-    spark = builder.getOrCreate()
+    spark = configure_spark_with_delta_pip(builder).getOrCreate()
     spark.sparkContext.setLogLevel(os.getenv("SPARK_LOG_LEVEL", "WARN"))
     return spark
 

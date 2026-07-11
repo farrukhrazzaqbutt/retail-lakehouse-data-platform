@@ -136,7 +136,7 @@ jobs:
 
       - name: dbt deps and compile
         env:
-          DBT_PROFILES_DIR: ./dbt/profiles
+          DBT_PROFILES_DIR: ${{ github.workspace }}/dbt/profiles
           SNOWFLAKE_ACCOUNT: placeholder
           SNOWFLAKE_USER: placeholder
           SNOWFLAKE_PASSWORD: placeholder
@@ -163,7 +163,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r requirements-airflow.txt
+          pip install -r requirements-airflow.txt pytest pandas PyYAML python-dotenv
 
       - name: Validate Airflow DAGs
         env:
