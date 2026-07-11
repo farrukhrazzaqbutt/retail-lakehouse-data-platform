@@ -116,7 +116,7 @@ jobs:
           pytest --cov=retail_lakehouse --cov-report=term-missing --cov-report=xml -q
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-xml
           path: coverage.xml
