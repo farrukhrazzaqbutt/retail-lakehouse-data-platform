@@ -49,51 +49,80 @@ Faker + Pandas + NumPy
 
 ## 3. Target Architecture (Phases 2–5)
 
-### Phase 2 — Ingestion (Azure Data Factory)
+### Phase 2 — Ingestion (Azure Data Factory) ✅
 
-- Ingest PostgreSQL tables via copy activity
+- Ingest PostgreSQL tables via ADF Copy activity (Parquet sink)
 - Land product update **CSV** and website event **JSON** files in **Azure Data Lake Storage**
-- Partition raw data by `ingestion_date` and `source_system`
-- Add pipeline parameters from configuration (no hard-coded storage paths)
+- Partition raw data by `ingestion_date` and `batch_id`
+- Add ingestion metadata columns at copy time
+- Local Python mirror for development without Azure credentials
 
-### Phase 3 — Processing (Databricks + Delta Lake)
+See [docs/phase2-adf-ingestion.md](docs/phase2-adf-ingestion.md) for full details.
 
-**Medallion layers:**
+### Phase 4 — Silver (PySpark) ✅
 
-| Layer | Purpose |
-|-------|---------|
-| Bronze | Raw payloads + ingestion metadata (`batch_id`, `source_file`, `ingested_at`) |
-| Silver | Cleaned, deduplicated, validated; quarantine tables for rejected records |
-| Gold | `dim_*` and `fct_*` tables plus business aggregates |
+- Validate Bronze data: nulls, accepted values, numeric bounds, duplicates
+- Referential integrity checks with quarantine routing
+- Deduplicate on primary key (latest `ingested_at` wins)
+- Silver Delta MERGE + quarantine Delta append
+- Local Spark pipeline mirroring Databricks execution
 
-**Delta Lake features to demonstrate:**
+See [docs/phase4-silver-transforms.md](docs/phase4-silver-transforms.md).
 
-- MERGE for upserts and slowly changing products
-- Schema enforcement and schema evolution
-- `DESCRIBE HISTORY` and time travel
-- Incremental processing with watermark columns
+### Phase 5 — Gold (Delta Lake) ✅
 
-### Phase 4 — Warehouse (Snowflake + dbt)
+- Build conformed dimensions (`dim_date`, `dim_customers`, `dim_products`, `dim_country`)
+- Build facts with revenue and payment flags (`fct_orders`, `fct_order_items`, `fct_payments`)
+- Materialize business metric marts (daily sales, monthly revenue, CLV, product performance, segments)
+- Delta MERGE for dimensions/facts; manifest per pipeline run
+- Local Spark pipeline mirroring Databricks Gold jobs
 
-- Load Gold tables into Snowflake raw schema
-- dbt project structure:
-  - `staging/` — source-conformed models
-  - `intermediate/` — business logic joins
-  - `marts/` — `mart_daily_sales`, `mart_monthly_revenue`, etc.
-- dbt tests (unique, not_null, relationships, accepted_values)
-- Seeds, snapshots, macros, incremental models, and documentation
+See [docs/phase5-gold-models.md](docs/phase5-gold-models.md).
 
-### Phase 5 — Orchestration & CI/CD
+### Phase 6 — Warehouse Load (Snowflake) ✅
 
-- **Apache Airflow** DAGs for ingestion → Databricks → Snowflake → dbt → reconciliation
-- **Pandas** source-to-target reconciliation reports
-- **Docker Compose** extended with Airflow services
-- **GitHub Actions** for linting, pytest, PySpark tests, and `dbt compile`
-- Full architecture diagram and runbook
+- Provision Snowflake database, schema, and role grants
+- Load 12 Gold Delta tables into `RETAIL_DW.RAW`
+- Auto-create tables from Gold schemas; overwrite (truncate + load) semantics
+- Validate row counts against Gold sources
+- Local Python pipeline mirroring production Snowflake loads
+
+See [docs/phase6-snowflake-load.md](docs/phase6-snowflake-load.md).
+
+### Phase 7 — dbt (Snowflake) ✅
+
+- dbt project on Snowflake RAW tables:
+  - `staging/` — source-conformed views over dims/facts
+  - `intermediate/` — enriched joins and daily aggregates
+  - `marts/` — 5 business metric tables in `RETAIL_DW.MARTS`
+- dbt tests: `unique`, `not_null`, `relationships`, RAW reconciliation
+- Schemas: `STAGING`, `INTERMEDIATE`, `MARTS`
+
+See [docs/phase7-dbt-models.md](docs/phase7-dbt-models.md).
+
+### Phase 8 — Orchestration (Airflow) ✅
+
+- Apache Airflow DAGs orchestrating Phases 1→7
+- `retail_platform_setup` — one-time Snowflake + dbt schema setup
+- `retail_daily_pipeline` — scheduled full ETL with per-phase validation
+- `retail_health_check` — weekly dry-run and compile checks
+- Pandas reconciliation reports across Postgres, Bronze, and manifests
+- Docker Compose Airflow services + GitHub Actions CI
+
+See [docs/phase8-airflow-orchestration.md](docs/phase8-airflow-orchestration.md).
+
+### Phase 9 — Testing, CI/CD & Documentation ✅
+
+- Expanded pytest suite with Spark auto-markers, CLI smoke, loader, and DAG import tests
+- GitHub Actions: lint (Ruff), typecheck (Mypy), Spark tests, coverage gate (60%)
+- Dependabot, pre-commit hooks, PR template, CONTRIBUTING.md, MIT LICENSE
+- Operator runbooks for local dev, pipeline failures, Airflow, and reconciliation
+
+See [docs/phase9-testing-cicd-docs.md](docs/phase9-testing-cicd-docs.md).
 
 ---
 
-## 4. Gold Layer Data Model (Planned)
+## 4. Gold Layer Data Model (Phase 5) ✅
 
 ### Dimensions
 
@@ -162,4 +191,4 @@ Invalid Silver records → **quarantine tables** with `rejection_reason`.
 
 ---
 
-*Last updated: Phase 1*
+*Last updated: Phase 4 (Silver)*

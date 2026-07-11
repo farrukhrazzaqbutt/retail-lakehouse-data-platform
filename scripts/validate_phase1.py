@@ -72,7 +72,9 @@ def main(log_level: str) -> None:
 
     failures: list[str] = []
     with engine.connect() as connection:
-        counts = connection.execute(text("SELECT * FROM retail.v_table_counts")).fetchall()
+        counts = connection.execute(
+            text("SELECT * FROM retail.v_table_counts")
+        ).fetchall()
         click.echo("Table row counts:")
         for row in counts:
             click.echo(f"  {row.table_name}: {row.row_count}")

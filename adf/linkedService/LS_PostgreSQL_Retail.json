@@ -1,0 +1,30 @@
+{
+  "name": "LS_PostgreSQL_Retail",
+  "properties": {
+    "description": "Retail transactional PostgreSQL source database.",
+    "annotations": ["phase2", "source"],
+    "type": "PostgreSqlV2",
+    "typeProperties": {
+      "server": "@linkedService().postgresHost",
+      "port": "@linkedService().postgresPort",
+      "database": "@linkedService().postgresDatabase",
+      "username": "@linkedService().postgresUser",
+      "password": {
+        "type": "AzureKeyVaultSecret",
+        "store": {
+          "referenceName": "LS_AzureKeyVault",
+          "type": "LinkedServiceReference"
+        },
+        "secretName": "postgres-password"
+      },
+      "sslMode": 2,
+      "authenticationType": "Basic"
+    },
+    "parameters": {
+      "postgresHost": { "type": "String" },
+      "postgresPort": { "type": "Int", "defaultValue": 55432 },
+      "postgresDatabase": { "type": "String" },
+      "postgresUser": { "type": "String" }
+    }
+  }
+}

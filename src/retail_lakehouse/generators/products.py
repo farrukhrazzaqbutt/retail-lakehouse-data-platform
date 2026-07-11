@@ -6,7 +6,11 @@ import pandas as pd
 
 from retail_lakehouse.config.settings import ProductCategoryConfig
 from retail_lakehouse.generators.base import BaseGenerator
-from retail_lakehouse.utils.helpers import choose_weighted, generate_id_sequence, round_currency
+from retail_lakehouse.utils.helpers import (
+    choose_weighted,
+    generate_id_sequence,
+    round_currency,
+)
 
 
 class ProductGenerator(BaseGenerator):
@@ -37,7 +41,9 @@ class ProductGenerator(BaseGenerator):
             margin = float(self.rng.uniform(0.15, 0.55))
             unit_cost = round_currency(unit_price * (1 - margin))
             brand = self.faker.company()
-            product_name = self._build_product_name(category.category, subcategory, brand)
+            product_name = self._build_product_name(
+                category.category, subcategory, brand
+            )
 
             records.append(
                 {

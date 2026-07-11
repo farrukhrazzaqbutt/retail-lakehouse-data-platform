@@ -1,0 +1,31 @@
+{
+  "name": "DS_ADLS_Parquet",
+  "properties": {
+    "description": "Partitioned Parquet sink for PostgreSQL extracts.",
+    "linkedServiceName": {
+      "referenceName": "LS_ADLS_Raw",
+      "type": "LinkedServiceReference",
+      "parameters": {
+        "storageAccountUrl": "@dataset().storageAccountUrl"
+      }
+    },
+    "parameters": {
+      "storageAccountUrl": { "type": "String" },
+      "filesystem": { "type": "String", "defaultValue": "raw" },
+      "folderPath": { "type": "String" },
+      "fileName": { "type": "String" }
+    },
+    "annotations": ["phase2", "sink"],
+    "type": "Parquet",
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobFSLocation",
+        "fileSystem": "@dataset().filesystem",
+        "folderPath": "@dataset().folderPath",
+        "fileName": "@dataset().fileName"
+      },
+      "compressionCodec": "snappy"
+    },
+    "schema": []
+  }
+}

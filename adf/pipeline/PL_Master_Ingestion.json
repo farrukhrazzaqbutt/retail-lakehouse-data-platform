@@ -1,0 +1,155 @@
+{
+  "name": "PL_Master_Ingestion",
+  "properties": {
+    "description": "Orchestrates PostgreSQL and file source ingestion into ADLS raw landing zone.",
+    "annotations": ["phase2", "master"],
+    "parameters": {
+      "batchId": {
+        "type": "String",
+        "defaultValue": "@concat('retail_', guid())"
+      },
+      "ingestionDate": {
+        "type": "String",
+        "defaultValue": "@formatDateTime(utcnow(), 'yyyy-MM-dd')"
+      },
+      "storageAccountUrl": { "type": "String" },
+      "filesystem": { "type": "String", "defaultValue": "raw" },
+      "postgresHost": { "type": "String" },
+      "postgresPort": { "type": "Int", "defaultValue": 55432 },
+      "postgresDatabase": { "type": "String" },
+      "postgresUser": { "type": "String" }
+    },
+    "variables": {
+      "ingestionSummary": { "type": "String" }
+    },
+    "activities": [
+      {
+        "name": "ForEach_PostgreSQL_Tables",
+        "type": "ForEach",
+        "dependsOn": [],
+        "userProperties": [],
+        "typeProperties": {
+          "items": {
+            "value": "@createArray('customers','products','orders','order_items','payments')",
+            "type": "Expression"
+          },
+          "isSequential": false,
+          "batchCount": 5,
+          "activities": [
+            {
+              "name": "Execute_PostgreSQL_Ingestion",
+              "type": "ExecutePipeline",
+              "dependsOn": [],
+              "policy": { "secureInput": false },
+              "userProperties": [],
+              "typeProperties": {
+                "pipeline": {
+                  "referenceName": "PL_Ingest_PostgreSQL_Table",
+                  "type": "PipelineReference"
+                },
+                "waitOnCompletion": true,
+                "parameters": {
+                  "tableName": { "value": "@item()", "type": "Expression" },
+                  "schemaName": "retail",
+                  "sourceSystem": "retail_postgres",
+                  "batchId": { "value": "@pipeline().parameters.batchId", "type": "Expression" },
+                  "ingestionDate": { "value": "@pipeline().parameters.ingestionDate", "type": "Expression" },
+                  "storageAccountUrl": { "value": "@pipeline().parameters.storageAccountUrl", "type": "Expression" },
+                  "filesystem": { "value": "@pipeline().parameters.filesystem", "type": "Expression" },
+                  "postgresHost": { "value": "@pipeline().parameters.postgresHost", "type": "Expression" },
+                  "postgresPort": { "value": "@pipeline().parameters.postgresPort", "type": "Expression" },
+                  "postgresDatabase": { "value": "@pipeline().parameters.postgresDatabase", "type": "Expression" },
+                  "postgresUser": { "value": "@pipeline().parameters.postgresUser", "type": "Expression" },
+                  "loadMode": "full",
+                  "watermarkColumn": "",
+                  "watermarkValue": "1900-01-01"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "Ingest_Product_Updates",
+        "type": "ExecutePipeline",
+        "dependsOn": [
+          {
+            "activity": "ForEach_PostgreSQL_Tables",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": { "secureInput": false },
+        "userProperties": [],
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "PL_Ingest_File_Source",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {
+            "entityName": "product_updates",
+            "sourceSystem": "retail_product_feed",
+            "fileFormat": "csv",
+            "batchId": { "value": "@pipeline().parameters.batchId", "type": "Expression" },
+            "ingestionDate": { "value": "@pipeline().parameters.ingestionDate", "type": "Expression" },
+            "storageAccountUrl": { "value": "@pipeline().parameters.storageAccountUrl", "type": "Expression" },
+            "filesystem": { "value": "@pipeline().parameters.filesystem", "type": "Expression" },
+            "sourceFolderPath": "landing/file_sources/product_updates"
+          }
+        }
+      },
+      {
+        "name": "Ingest_Website_Events",
+        "type": "ExecutePipeline",
+        "dependsOn": [
+          {
+            "activity": "ForEach_PostgreSQL_Tables",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": { "secureInput": false },
+        "userProperties": [],
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "PL_Ingest_File_Source",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {
+            "entityName": "website_events",
+            "sourceSystem": "retail_web_analytics",
+            "fileFormat": "json",
+            "batchId": { "value": "@pipeline().parameters.batchId", "type": "Expression" },
+            "ingestionDate": { "value": "@pipeline().parameters.ingestionDate", "type": "Expression" },
+            "storageAccountUrl": { "value": "@pipeline().parameters.storageAccountUrl", "type": "Expression" },
+            "filesystem": { "value": "@pipeline().parameters.filesystem", "type": "Expression" },
+            "sourceFolderPath": "landing/file_sources/website_events"
+          }
+        }
+      },
+      {
+        "name": "Set_Ingestion_Summary",
+        "type": "SetVariable",
+        "dependsOn": [
+          {
+            "activity": "Ingest_Product_Updates",
+            "dependencyConditions": ["Succeeded"]
+          },
+          {
+            "activity": "Ingest_Website_Events",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": { "secureOutput": false, "secureInput": false },
+        "userProperties": [],
+        "typeProperties": {
+          "variableName": "ingestionSummary",
+          "value": {
+            "value": "@concat('Ingestion completed batch_id=', pipeline().parameters.batchId, ' date=', pipeline().parameters.ingestionDate)",
+            "type": "Expression"
+          }
+        }
+      }
+    ]
+  }
+}

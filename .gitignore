@@ -44,10 +44,14 @@ coverage.xml
 
 # Generated data (keep samples only)
 data/generated/
+data/lakehouse/
+data/file_sources/**/*
+!data/file_sources/.gitkeep
 data/raw/
 data/bronze/
 data/silver/
 data/gold/
+data/reconciliation/
 *.parquet
 *.delta/
 
@@ -60,7 +64,7 @@ data/gold/
 .DS_Store
 Thumbs.db
 
-# dbt (future phases)
+# dbt (Phase 7)
 dbt_packages/
 target/
 logs/

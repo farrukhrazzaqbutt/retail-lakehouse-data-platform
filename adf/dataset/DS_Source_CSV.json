@@ -1,0 +1,32 @@
+{
+  "name": "DS_Source_CSV",
+  "properties": {
+    "description": "CSV file source dataset (product updates).",
+    "linkedServiceName": {
+      "referenceName": "LS_ADLS_Raw",
+      "type": "LinkedServiceReference",
+      "parameters": {
+        "storageAccountUrl": "@dataset().storageAccountUrl"
+      }
+    },
+    "parameters": {
+      "storageAccountUrl": { "type": "String" },
+      "filesystem": { "type": "String", "defaultValue": "raw" },
+      "folderPath": { "type": "String" }
+    },
+    "annotations": ["phase2", "file-source"],
+    "type": "DelimitedText",
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobFSLocation",
+        "fileSystem": "@dataset().filesystem",
+        "folderPath": "@dataset().folderPath"
+      },
+      "columnDelimiter": ",",
+      "escapeChar": "\\",
+      "firstRowAsHeader": true,
+      "quoteChar": "\""
+    },
+    "schema": []
+  }
+}

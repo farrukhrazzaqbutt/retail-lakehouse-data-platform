@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Iterable
+from collections.abc import Iterable
 
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -79,8 +79,7 @@ class PostgresLoader:
             for name in target_tables
         ]
         statement = (
-            f"TRUNCATE TABLE {', '.join(qualified_tables)} "
-            "RESTART IDENTITY CASCADE;"
+            f"TRUNCATE TABLE {', '.join(qualified_tables)} RESTART IDENTITY CASCADE;"
         )
         logger.info("Truncating tables: %s", ", ".join(target_tables))
         with self.engine.begin() as connection:
@@ -120,7 +119,9 @@ class PostgresLoader:
 
         return len(df)
 
-    def load_all(self, datasets: dict[str, pd.DataFrame], truncate_first: bool = False) -> dict[str, int]:
+    def load_all(
+        self, datasets: dict[str, pd.DataFrame], truncate_first: bool = False
+    ) -> dict[str, int]:
         """
         Load all datasets in foreign-key-safe order.
 
@@ -144,7 +145,9 @@ class PostgresLoader:
 
     def get_row_counts(self) -> pd.DataFrame:
         """Return row counts from the validation view."""
-        query = text(f"SELECT * FROM {self.table_config.schema}.v_table_counts ORDER BY table_name")
+        query = text(
+            f"SELECT * FROM {self.table_config.schema}.v_table_counts ORDER BY table_name"
+        )
         with self.engine.connect() as connection:
             return pd.read_sql(query, connection)
 

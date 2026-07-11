@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: int_orders_enriched
+    description: Orders enriched with customer segment and geography.
+  - name: int_order_items_enriched
+    description: Line items enriched with order completion and product attributes.
+  - name: int_orders_daily
+    description: Daily order and revenue aggregates.
+  - name: int_payments_daily
+    description: Daily payment attempt and failure aggregates.
+  - name: int_customer_first_order
+    description: First order timestamp per customer for new/returning logic.
+  - name: int_customer_segment_orders
+    description: Orders joined to customer segment attributes.

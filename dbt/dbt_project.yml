@@ -1,0 +1,40 @@
+name: retail_lakehouse
+version: 1.0.0
+config-version: 2
+
+profile: retail_lakehouse
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - target
+  - dbt_packages
+
+vars:
+  completed_statuses: ["completed"]
+  cancelled_statuses: ["cancelled"]
+  refunded_statuses: ["refunded"]
+  successful_payment_statuses: ["succeeded"]
+  failed_payment_statuses: ["failed"]
+  date_start: "2023-01-01"
+  date_end: "2026-12-31"
+
+models:
+  retail_lakehouse:
+    staging:
+      +schema: staging
+      +materialized: view
+      +tags: ["staging"]
+    intermediate:
+      +schema: intermediate
+      +materialized: view
+      +tags: ["intermediate"]
+    marts:
+      +schema: marts
+      +materialized: table
+      +tags: ["marts"]

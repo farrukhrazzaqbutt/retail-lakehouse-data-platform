@@ -1,0 +1,142 @@
+# Silver layer transformation configuration (Phase 4)
+# Cleans, validates, deduplicates Bronze data and routes invalid rows to quarantine.
+
+silver:
+  bronze_base_path: bronze
+  silver_base_path: silver
+  quarantine_base_path: silver/_quarantine
+  processed_at_column: processed_at
+  rejection_reason_column: rejection_reason
+
+  # Shared Bronze metadata columns preserved in Silver
+  bronze_metadata_columns:
+    - batch_id
+    - source_system
+    - source_file
+    - ingested_at
+    - ingestion_date
+
+deduplication:
+  default_order_columns:
+    - ingested_at
+    - batch_id
+
+entities:
+  customers:
+    source_type: postgres
+    format: parquet
+    primary_key: customer_id
+    required_columns: [customer_id, email, first_name, last_name, country_code, customer_segment]
+    accepted_values:
+      customer_segment: [budget, standard, premium]
+    dedupe_keys: [customer_id]
+
+  products:
+    source_type: postgres
+    format: parquet
+    primary_key: product_id
+    required_columns: [product_id, sku, product_name, category, unit_price, unit_cost]
+    numeric_constraints:
+      unit_price: {min_exclusive: 0}
+      unit_cost: {min_inclusive: 0}
+    dedupe_keys: [product_id]
+
+  orders:
+    source_type: postgres
+    format: parquet
+    primary_key: order_id
+    required_columns: [order_id, customer_id, order_date, order_status, total_amount]
+    accepted_values:
+      order_status: [completed, cancelled, refunded, pending, failed]
+    numeric_constraints:
+      subtotal_amount: {min_inclusive: 0}
+      discount_amount: {min_inclusive: 0}
+      shipping_amount: {min_inclusive: 0}
+      tax_amount: {min_inclusive: 0}
+      total_amount: {min_inclusive: 0}
+    foreign_keys:
+      customer_id: customers.customer_id
+    dedupe_keys: [order_id]
+
+  order_items:
+    source_type: postgres
+    format: parquet
+    primary_key: order_item_id
+    required_columns: [order_item_id, order_id, product_id, quantity, unit_price, line_total]
+    numeric_constraints:
+      quantity: {min_exclusive: 0}
+      unit_price: {min_exclusive: 0}
+      discount_pct: {min_inclusive: 0, max_inclusive: 1}
+      line_total: {min_inclusive: 0}
+    foreign_keys:
+      order_id: orders.order_id
+      product_id: products.product_id
+    dedupe_keys: [order_item_id]
+
+  payments:
+    source_type: postgres
+    format: parquet
+    primary_key: payment_id
+    required_columns: [payment_id, order_id, payment_method, payment_status, amount]
+    accepted_values:
+      payment_method: [credit_card, debit_card, paypal, bank_transfer, gift_card]
+      payment_status: [succeeded, failed, pending, refunded]
+    numeric_constraints:
+      amount: {min_inclusive: 0}
+    foreign_keys:
+      order_id: orders.order_id
+    dedupe_keys: [payment_id]
+
+  product_updates:
+    source_type: file
+    format: csv
+    primary_key: update_id
+    required_columns: [update_id, product_id, sku, update_type, effective_at]
+    accepted_values:
+      update_type: [price_change, category_change, status_change, description_change]
+    foreign_keys:
+      product_id: products.product_id
+    dedupe_keys: [update_id]
+
+  website_events:
+    source_type: file
+    format: json
+    primary_key: event_id
+    required_columns: [event_id, event_type, event_timestamp, customer_id, session_id]
+    accepted_values:
+      event_type: [page_view, product_view, add_to_cart, checkout_start, purchase, search]
+    foreign_keys:
+      customer_id: customers.customer_id
+    dedupe_keys: [event_id]
+
+referential_integrity:
+  enabled: true
+  checks:
+    - child_entity: orders
+      child_column: customer_id
+      parent_entity: customers
+      parent_column: customer_id
+    - child_entity: order_items
+      child_column: order_id
+      parent_entity: orders
+      parent_column: order_id
+    - child_entity: order_items
+      child_column: product_id
+      parent_entity: products
+      parent_column: product_id
+    - child_entity: payments
+      child_column: order_id
+      parent_entity: orders
+      parent_column: order_id
+    - child_entity: product_updates
+      child_column: product_id
+      parent_entity: products
+      parent_column: product_id
+    - child_entity: website_events
+      child_column: customer_id
+      parent_entity: customers
+      parent_column: customer_id
+
+local_dev:
+  bronze_root: ./data/lakehouse/raw
+  silver_root: ./data/lakehouse/silver

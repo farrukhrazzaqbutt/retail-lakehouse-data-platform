@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, time, timezone
+from datetime import UTC, datetime, time
 
 import pandas as pd
 
@@ -35,7 +35,6 @@ class OrderGenerator(BaseGenerator):
             Amounts are finalized after order items are generated.
         """
         count = self.config.num_orders
-        customer_ids = self.customers_df["customer_id"].to_numpy()
         records: list[dict[str, object]] = []
 
         for order_id in range(1, count + 1):
@@ -74,10 +73,12 @@ class OrderGenerator(BaseGenerator):
         hour = int(self.rng.integers(0, 24))
         minute = int(self.rng.integers(0, 60))
         second = int(self.rng.integers(0, 60))
-        return datetime.combine(order_day, time(hour, minute, second), tzinfo=timezone.utc)
+        return datetime.combine(order_day, time(hour, minute, second), tzinfo=UTC)
 
     @staticmethod
-    def finalize_amounts(orders_df: pd.DataFrame, order_items_df: pd.DataFrame) -> pd.DataFrame:
+    def finalize_amounts(
+        orders_df: pd.DataFrame, order_items_df: pd.DataFrame
+    ) -> pd.DataFrame:
         """
         Compute order-level monetary fields from order line items.
 
@@ -98,20 +99,27 @@ class OrderGenerator(BaseGenerator):
             gross_amount=("gross_line", "sum"),
         )
 
-        amount_columns = ["subtotal_amount", "discount_amount", "tax_amount", "total_amount"]
-        result = orders_df.drop(columns=amount_columns, errors="ignore").merge(
-            line_totals,
-            on="order_id",
-            how="left",
-        ).fillna({"subtotal_amount": 0.0, "gross_amount": 0.0})
+        amount_columns = [
+            "subtotal_amount",
+            "discount_amount",
+            "tax_amount",
+            "total_amount",
+        ]
+        result = (
+            orders_df.drop(columns=amount_columns, errors="ignore")
+            .merge(
+                line_totals,
+                on="order_id",
+                how="left",
+            )
+            .fillna({"subtotal_amount": 0.0, "gross_amount": 0.0})
+        )
         result["discount_amount"] = (
             result["gross_amount"] - result["subtotal_amount"]
         ).clip(lower=0)
         result["tax_amount"] = (result["subtotal_amount"] * 0.08).apply(round_currency)
         result["total_amount"] = (
-            result["subtotal_amount"]
-            + result["shipping_amount"]
-            + result["tax_amount"]
+            result["subtotal_amount"] + result["shipping_amount"] + result["tax_amount"]
         ).apply(round_currency)
         result["subtotal_amount"] = result["subtotal_amount"].apply(round_currency)
         result["discount_amount"] = result["discount_amount"].apply(round_currency)

@@ -1,0 +1,14 @@
+{
+  "name": "LS_ADLS_Raw",
+  "properties": {
+    "description": "Azure Data Lake Storage Gen2 raw landing zone.",
+    "annotations": ["phase2", "sink"],
+    "type": "AzureBlobFS",
+    "typeProperties": {
+      "url": "@linkedService().storageAccountUrl"
+    },
+    "parameters": {
+      "storageAccountUrl": { "type": "String" }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+version: 2
+
+models:
+  - name: mart_daily_sales
+    description: Daily revenue, order counts, AOV, and payment failure metrics.
+    columns:
+      - name: sale_date
+        tests: [unique, not_null]
+      - name: gross_revenue
+        tests: [not_null]
+      - name: net_revenue
+        tests: [not_null]
+
+  - name: mart_monthly_revenue
+    description: Monthly revenue with active and new/returning customer counts.
+    columns:
+      - name: year_month
+        tests: [unique, not_null]
+
+  - name: mart_customer_lifetime_value
+    description: Customer lifetime value and repeat purchase indicators.
+    columns:
+      - name: customer_key
+        tests: [unique, not_null]
+
+  - name: mart_product_performance
+    description: Product and category performance metrics.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - product_id
+            - category
+            - subcategory
+    columns:
+      - name: product_id
+        tests: [not_null]
+
+  - name: mart_customer_segments
+    description: Revenue and engagement metrics by segment and country.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - customer_segment
+            - country_code
+    columns:
+      - name: customer_segment
+        tests: [not_null]
+      - name: country_code
+        tests: [not_null]

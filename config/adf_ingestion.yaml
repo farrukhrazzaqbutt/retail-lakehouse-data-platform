@@ -1,0 +1,63 @@
+# Azure Data Factory ingestion configuration
+# All storage paths and source names are parameterized — no hard-coded Azure account names.
+
+factory:
+  name_param: AZURE_DATA_FACTORY_NAME
+  location: eastus
+
+ingestion:
+  batch_id_prefix: retail
+  default_load_mode: full   # full | incremental
+  partition_column: ingestion_date
+  metadata_columns:
+    - batch_id
+    - source_system
+    - source_file
+    - ingested_at
+    - ingestion_date
+
+# ADLS Gen2 landing zone layout (Bronze-bound raw layer)
+adls:
+  filesystem: raw
+  base_path: bronze
+  path_template: "{base_path}/{source_type}/{entity}/ingestion_date={ingestion_date}/batch_id={batch_id}"
+
+postgres_sources:
+  source_system: retail_postgres
+  source_type: postgres
+  schema: retail
+  tables:
+    - entity: customers
+      load_mode: full
+      watermark_column: updated_at
+    - entity: products
+      load_mode: incremental
+      watermark_column: updated_at
+    - entity: orders
+      load_mode: incremental
+      watermark_column: updated_at
+    - entity: order_items
+      load_mode: full
+      watermark_column: null
+    - entity: payments
+      load_mode: incremental
+      watermark_column: updated_at
+
+file_sources:
+  - entity: product_updates
+    source_system: retail_product_feed
+    source_type: file
+    format: csv
+    staging_path: landing/file_sources/product_updates
+    pattern: "*.csv"
+  - entity: website_events
+    source_system: retail_web_analytics
+    source_type: file
+    format: json
+    staging_path: landing/file_sources/website_events
+    pattern: "*.json"
+
+local_dev:
+  landing_dir: ./data/lakehouse/raw
+  use_azurite: false
+  azurite_container: raw

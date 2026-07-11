@@ -1,0 +1,107 @@
+{
+  "name": "PL_Ingest_File_Source",
+  "properties": {
+    "description": "Copy CSV or JSON file sources from staging to partitioned raw ADLS paths.",
+    "annotations": ["phase2", "file-source"],
+    "parameters": {
+      "entityName": { "type": "String" },
+      "sourceSystem": { "type": "String" },
+      "fileFormat": { "type": "String" },
+      "batchId": { "type": "String" },
+      "ingestionDate": { "type": "String" },
+      "storageAccountUrl": { "type": "String" },
+      "filesystem": { "type": "String", "defaultValue": "raw" },
+      "sourceFolderPath": { "type": "String" }
+    },
+    "activities": [
+      {
+        "name": "Copy_File_Source",
+        "type": "Copy",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "userProperties": [],
+        "typeProperties": {
+          "source": {
+            "type": "DelimitedTextSource",
+            "storeSettings": {
+              "type": "AzureBlobFSReadSettings",
+              "recursive": true
+            },
+            "formatSettings": {
+              "type": "DelimitedTextReadSettings"
+            }
+          },
+          "sink": {
+            "type": "DelimitedTextSink",
+            "storeSettings": {
+              "type": "AzureBlobFSWriteSettings",
+              "copyBehavior": "PreserveHierarchy"
+            },
+            "formatSettings": {
+              "type": "DelimitedTextWriteSettings",
+              "quoteAllText": true,
+              "fileExtension": ".csv"
+            }
+          },
+          "enableStaging": false,
+          "additionalColumns": [
+            {
+              "name": "batch_id",
+              "value": { "value": "@pipeline().parameters.batchId", "type": "Expression" }
+            },
+            {
+              "name": "source_system",
+              "value": { "value": "@pipeline().parameters.sourceSystem", "type": "Expression" }
+            },
+            {
+              "name": "source_file",
+              "value": {
+                "value": "@concat(pipeline().parameters.entityName, '_', pipeline().parameters.fileFormat)",
+                "type": "Expression"
+              }
+            },
+            {
+              "name": "ingested_at",
+              "value": { "value": "@utcnow()", "type": "Expression" }
+            },
+            {
+              "name": "ingestion_date",
+              "value": { "value": "@pipeline().parameters.ingestionDate", "type": "Expression" }
+            }
+          ]
+        },
+        "inputs": [
+          {
+            "referenceName": "DS_Source_CSV",
+            "type": "DatasetReference",
+            "parameters": {
+              "storageAccountUrl": "@pipeline().parameters.storageAccountUrl",
+              "filesystem": "@pipeline().parameters.filesystem",
+              "folderPath": "@pipeline().parameters.sourceFolderPath"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "DS_Source_CSV",
+            "type": "DatasetReference",
+            "parameters": {
+              "storageAccountUrl": "@pipeline().parameters.storageAccountUrl",
+              "filesystem": "@pipeline().parameters.filesystem",
+              "folderPath": {
+                "value": "@concat('bronze/file/', pipeline().parameters.entityName, '/ingestion_date=', pipeline().parameters.ingestionDate, '/batch_id=', pipeline().parameters.batchId)",
+                "type": "Expression"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "LS_AzureKeyVault",
+  "properties": {
+    "description": "Key Vault for PostgreSQL and storage secrets.",
+    "annotations": ["phase2", "secrets"],
+    "type": "AzureKeyVault",
+    "typeProperties": {
+      "baseUrl": "@linkedService().keyVaultUrl"
+    },
+    "parameters": {
+      "keyVaultUrl": { "type": "String" }
+    }
+  }
+}

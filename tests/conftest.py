@@ -77,3 +77,42 @@ def small_config() -> DataGenerationConfig:
 def generated_datasets(small_config: DataGenerationConfig):
     """Run the full generation pipeline with small volumes."""
     return DataGenerationPipeline(small_config).run()
+
+
+@pytest.fixture(scope="session")
+def spark_session(tmp_path_factory):
+    """Create a shared local Spark session for Silver transform tests."""
+    import os
+    import shutil
+
+    pytest.importorskip("pyspark")
+    if not shutil.which("java") and not os.getenv("JAVA_HOME"):
+        pytest.skip("Java not installed — Spark tests skipped")
+
+    from retail_lakehouse.spark.session import get_spark_session, stop_spark_session
+
+    warehouse = tmp_path_factory.mktemp("spark-warehouse")
+    spark = get_spark_session(
+        app_name="retail-lakehouse-tests",
+        warehouse_dir=str(warehouse),
+    )
+    yield spark
+    stop_spark_session(spark)
+
+
+def pytest_collection_modifyitems(items) -> None:
+    """Mark Spark-dependent tests automatically."""
+    spark_paths = ("transforms", "gold", "warehouse")
+    for item in items:
+        if any(part in str(item.fspath) for part in spark_paths):
+            item.add_marker(pytest.mark.spark)
+
+
+@pytest.fixture
+def silver_test_paths(tmp_path):
+    """Bronze and Silver roots for isolated transform tests."""
+    bronze_root = tmp_path / "raw"
+    silver_root = tmp_path / "silver"
+    bronze_root.mkdir()
+    silver_root.mkdir()
+    return bronze_root, silver_root

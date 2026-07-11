@@ -1,0 +1,152 @@
+{
+  "name": "PL_Ingest_PostgreSQL_Table",
+  "properties": {
+    "description": "Copy a single PostgreSQL table to partitioned Parquet in ADLS raw zone.",
+    "annotations": ["phase2", "postgres"],
+    "parameters": {
+      "tableName": { "type": "String" },
+      "schemaName": { "type": "String", "defaultValue": "retail" },
+      "sourceSystem": { "type": "String", "defaultValue": "retail_postgres" },
+      "batchId": { "type": "String" },
+      "ingestionDate": { "type": "String" },
+      "storageAccountUrl": { "type": "String" },
+      "filesystem": { "type": "String", "defaultValue": "raw" },
+      "postgresHost": { "type": "String" },
+      "postgresPort": { "type": "Int", "defaultValue": 55432 },
+      "postgresDatabase": { "type": "String" },
+      "postgresUser": { "type": "String" },
+      "watermarkColumn": { "type": "String" },
+      "watermarkValue": { "type": "String" },
+      "loadMode": { "type": "String", "defaultValue": "full" }
+    },
+    "variables": {
+      "rowsCopied": { "type": "String" }
+    },
+    "activities": [
+      {
+        "name": "Copy_PostgreSQL_To_ADLS",
+        "type": "Copy",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "userProperties": [],
+        "typeProperties": {
+          "source": {
+            "type": "PostgreSqlSource",
+            "query": {
+              "value": "@if(equals(pipeline().parameters.loadMode, 'incremental'), concat('SELECT * FROM ', pipeline().parameters.schemaName, '.', pipeline().parameters.tableName, ' WHERE ', pipeline().parameters.watermarkColumn, ' > ''', pipeline().parameters.watermarkValue, ''''), concat('SELECT * FROM ', pipeline().parameters.schemaName, '.', pipeline().parameters.tableName))",
+              "type": "Expression"
+            }
+          },
+          "sink": {
+            "type": "ParquetSink",
+            "storeSettings": {
+              "type": "AzureBlobFSWriteSettings"
+            },
+            "formatSettings": {
+              "type": "ParquetWriteSettings"
+            }
+          },
+          "enableStaging": false,
+          "translator": {
+            "type": "TabularTranslator",
+            "mappings": []
+          },
+          "additionalColumns": [
+            {
+              "name": "batch_id",
+              "value": {
+                "value": "@pipeline().parameters.batchId",
+                "type": "Expression"
+              }
+            },
+            {
+              "name": "source_system",
+              "value": {
+                "value": "@pipeline().parameters.sourceSystem",
+                "type": "Expression"
+              }
+            },
+            {
+              "name": "source_file",
+              "value": {
+                "value": "@concat(pipeline().parameters.schemaName, '.', pipeline().parameters.tableName)",
+                "type": "Expression"
+              }
+            },
+            {
+              "name": "ingested_at",
+              "value": {
+                "value": "@utcnow()",
+                "type": "Expression"
+              }
+            },
+            {
+              "name": "ingestion_date",
+              "value": {
+                "value": "@pipeline().parameters.ingestionDate",
+                "type": "Expression"
+              }
+            }
+          ]
+        },
+        "inputs": [
+          {
+            "referenceName": "DS_Postgres_Table",
+            "type": "DatasetReference",
+            "parameters": {
+              "schemaName": "@pipeline().parameters.schemaName",
+              "tableName": "@pipeline().parameters.tableName",
+              "postgresHost": "@pipeline().parameters.postgresHost",
+              "postgresPort": "@pipeline().parameters.postgresPort",
+              "postgresDatabase": "@pipeline().parameters.postgresDatabase",
+              "postgresUser": "@pipeline().parameters.postgresUser"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "DS_ADLS_Parquet",
+            "type": "DatasetReference",
+            "parameters": {
+              "storageAccountUrl": "@pipeline().parameters.storageAccountUrl",
+              "filesystem": "@pipeline().parameters.filesystem",
+              "folderPath": {
+                "value": "@concat('bronze/postgres/', pipeline().parameters.tableName, '/ingestion_date=', pipeline().parameters.ingestionDate, '/batch_id=', pipeline().parameters.batchId)",
+                "type": "Expression"
+              },
+              "fileName": {
+                "value": "@concat(pipeline().parameters.tableName, '.parquet')",
+                "type": "Expression"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Set_RowsCopied",
+        "type": "SetVariable",
+        "dependsOn": [
+          {
+            "activity": "Copy_PostgreSQL_To_ADLS",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "policy": { "secureOutput": false, "secureInput": false },
+        "userProperties": [],
+        "typeProperties": {
+          "variableName": "rowsCopied",
+          "value": {
+            "value": "@string(activity('Copy_PostgreSQL_To_ADLS').output.rowsCopied)",
+            "type": "Expression"
+          }
+        }
+      }
+    ]
+  }
+}

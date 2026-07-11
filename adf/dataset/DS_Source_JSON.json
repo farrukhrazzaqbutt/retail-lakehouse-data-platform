@@ -1,0 +1,28 @@
+{
+  "name": "DS_Source_JSON",
+  "properties": {
+    "description": "JSON file source dataset (website events).",
+    "linkedServiceName": {
+      "referenceName": "LS_ADLS_Raw",
+      "type": "LinkedServiceReference",
+      "parameters": {
+        "storageAccountUrl": "@dataset().storageAccountUrl"
+      }
+    },
+    "parameters": {
+      "storageAccountUrl": { "type": "String" },
+      "filesystem": { "type": "String", "defaultValue": "raw" },
+      "folderPath": { "type": "String" }
+    },
+    "annotations": ["phase2", "file-source"],
+    "type": "Json",
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobFSLocation",
+        "fileSystem": "@dataset().filesystem",
+        "folderPath": "@dataset().folderPath"
+      }
+    },
+    "schema": []
+  }
+}

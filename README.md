@@ -3,7 +3,8 @@
 > End-to-end analytics platform for a fictional online retailer — built as a production-style portfolio project demonstrating modern data engineering practices.
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Phase](https://img.shields.io/badge/phase-1%20complete-green.svg)]()
+[![CI](https://github.com/farrukhrazzaqbutt/retail-lakehouse-data-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/farrukhrazzaqbutt/retail-lakehouse-data-platform/actions/workflows/ci.yml)
+[![Phase](https://img.shields.io/badge/phase-9%20complete-green.svg)]()
 
 ---
 
@@ -22,7 +23,7 @@
 11. [Running Tests](#running-tests)
 12. [Validation](#validation)
 13. [Design Decisions](#design-decisions)
-14. [Business Metrics (Future Phases)](#business-metrics-future-phases)
+14. [Business Metrics (Phase 5 Gold)](#business-metrics-phase-5-gold)
 15. [Contributing](#contributing)
 16. [License](#license)
 
@@ -32,12 +33,16 @@
 
 This project simulates a full **Retail Lakehouse Data Platform** for an e-commerce company. Data flows from operational sources through a **Medallion Architecture** (Bronze → Silver → Gold) on **Delta Lake**, into **Snowflake** for warehousing, and through **dbt** for analytics marts — all orchestrated by **Apache Airflow**.
 
-**Phase 1** (current) establishes the **transactional source layer**:
+**Phase 1** establishes the **transactional source layer**. **Phase 2** adds **Azure Data Factory ingestion**. **Phase 4** adds **PySpark Silver transforms** with quarantine handling and Delta MERGE. **Phase 5** adds **Delta Lake Gold models** and business metric marts. **Phase 6** adds **Snowflake loading and setup** for the RAW warehouse layer. **Phase 7** adds **dbt staging, intermediate, and mart models** on Snowflake. **Phase 8** adds **Apache Airflow orchestration** and end-to-end reconciliation.
 
-- Realistic synthetic data generation (Python, Faker, Pandas, NumPy)
-- PostgreSQL as the system-of-record for customers, products, orders, order items, and payments
-- Docker Compose for local PostgreSQL
-- Unit tests and validation scripts
+- Phase 1: synthetic data, PostgreSQL, Docker, tests
+- Phase 2: CSV/JSON file sources, ADF pipelines, local ADLS mirror, ingestion metadata
+- Phase 4: PySpark Silver validation, deduplication, quarantine Delta tables
+- Phase 5: Gold dimensions, facts, and business metric marts (daily sales, CLV, segments)
+- Phase 6: Snowflake database setup and Gold table loads into `RETAIL_DW.RAW`
+- Phase 7: dbt staging/intermediate/marts with tests and RAW reconciliation
+- Phase 8: Airflow DAGs orchestrating the full pipeline with reconciliation reports
+- Phase 9: Testing hardening, CI/CD quality gates, runbooks, and contributor docs
 
 ---
 
@@ -53,7 +58,9 @@ This project simulates a full **Retail Lakehouse Data Platform** for an e-commer
 | Order Items   | Line-level quantity, pricing, and discounts      |
 | Payments      | Payment method, status, and transaction refs     |
 
-Future phases add **product update files** (CSV/JSON) and **website event streams** (JSON).
+Future phases may add **Databricks** cloud execution and production hardening.
+
+Phase 2 adds **product update files** (CSV) and **website event streams** (JSON), ingested via **Azure Data Factory** into **ADLS Gen2**.
 
 ---
 
@@ -128,8 +135,8 @@ See [docs/architecture.md](docs/architecture.md) for detailed architecture notes
 | Testing             | pytest                                                    | 1     |
 | Ingestion           | Azure Data Factory, Azure Data Lake Storage               | 2     |
 | Processing          | Databricks, PySpark, Delta Lake                           | 3     |
-| Warehouse           | Snowflake, dbt                                            | 4     |
-| Orchestration       | Apache Airflow                                            | 5     |
+| Warehouse           | Snowflake, dbt                                            | 6–7   |
+| Orchestration       | Apache Airflow                                            | 8     |
 | CI/CD               | GitHub Actions                                            | 5     |
 | Reconciliation      | Pandas reports                                            | 5     |
 
@@ -139,33 +146,87 @@ See [docs/architecture.md](docs/architecture.md) for detailed architecture notes
 
 ```
 retail-lakehouse-data-platform/
+├── adf/                         # Azure Data Factory JSON artifacts (Phase 2)
+│   ├── linkedService/
+│   ├── dataset/
+│   ├── pipeline/
+│   └── trigger/
 ├── .env.example                 # Environment variable template (no secrets)
 ├── .gitignore
 ├── README.md
-├── docker-compose.yml           # PostgreSQL service (Phase 1)
+├── docker-compose.yml           # PostgreSQL + optional Azurite (Phase 2)
 ├── pyproject.toml               # Project metadata and pytest config
 ├── requirements.txt
 │
 ├── config/
 │   ├── data_generation.yaml     # Volumes, distributions, categories
-│   └── postgres_tables.yaml     # Table metadata and load settings
+│   ├── postgres_tables.yaml     # Table metadata and load settings
+│   ├── file_sources.yaml        # Phase 2 CSV/JSON generation
+│   ├── adf_ingestion.yaml       # Phase 2 ingestion paths and tables
+│   ├── silver_transforms.yaml   # Phase 4 Silver DQ rules
+│   ├── gold_models.yaml         # Phase 5 Gold dimensions, facts, marts
+│   └── snowflake_load.yaml      # Phase 6 Snowflake load order and settings
+│
+├── dbt/                         # Phase 7 dbt project
+│   ├── dbt_project.yml
+│   ├── profiles/profiles.yml
+│   └── models/                  # staging, intermediate, marts
+│
+├── airflow/                     # Phase 8 Airflow DAGs
+│   ├── Dockerfile
+│   ├── dags/                    # setup, daily, health-check DAGs
+│   └── include/task_commands.py
 │
 ├── db/
 │   └── init/
 │       └── 01_schema.sql        # PostgreSQL DDL, constraints, indexes
 │
+├── sql/
+│   └── snowflake/
+│       ├── 01_setup.sql         # Phase 6 Snowflake database/schema setup
+│       └── 02_dbt_schemas.sql   # Phase 7 dbt schema setup
+│
 ├── docs/
-│   └── architecture.md          # Architecture decisions and phase plan
+│   ├── architecture.md          # Architecture decisions and phase plan
+│   ├── phase2-adf-ingestion.md  # Phase 2 ADF ingestion
+│   ├── phase4-silver-transforms.md  # Phase 4 Silver transforms
+│   ├── phase5-gold-models.md    # Phase 5 Gold models and marts
+│   ├── phase6-snowflake-load.md # Phase 6 Snowflake loading and setup
+│   ├── phase7-dbt-models.md     # Phase 7 dbt staging/intermediate/marts
+│   ├── phase8-airflow-orchestration.md  # Phase 8 Airflow DAGs
+│   ├── phase9-testing-cicd-docs.md      # Phase 9 testing and CI/CD
+│   └── runbooks/                        # Operator runbooks
 │
 ├── scripts/
 │   ├── generate_data.py         # Generate synthetic data → CSV
 │   ├── load_postgres.py         # Generate/load data → PostgreSQL
-│   └── validate_phase1.py       # Data quality validation queries
+│   ├── validate_phase1.py       # Phase 1 data quality checks
+│   ├── generate_file_sources.py # Phase 2 CSV/JSON file sources
+│   ├── run_local_ingestion.py   # Phase 2 local ADF mirror → ADLS layout
+│   ├── validate_phase2.py       # Phase 2 landing zone validation
+│   ├── run_silver_transforms.py  # Phase 4 Silver PySpark transforms
+│   ├── validate_silver.py       # Phase 4 Silver + quarantine validation
+│   ├── run_gold_models.py       # Phase 5 Gold dimensions, facts, marts
+│   ├── validate_gold.py         # Phase 5 Gold layer validation
+│   ├── setup_snowflake.py       # Phase 6 Snowflake database/schema setup
+│   ├── run_snowflake_load.py    # Phase 6 Gold → Snowflake load
+│   ├── validate_snowflake.py    # Phase 6 Snowflake validation
+│   ├── setup_dbt_schemas.py     # Phase 7 Snowflake dbt schema setup
+│   ├── run_dbt_models.py        # Phase 7 dbt run wrapper
+│   ├── validate_dbt.py          # Phase 7 dbt compile/test validation
+│   ├── run_reconciliation.py    # Phase 8 cross-layer reconciliation
+│   └── run_ci_local.py          # Phase 9 local CI pipeline
 │
 ├── src/
 │   └── retail_lakehouse/
 │       ├── config/              # Settings loaders (env + YAML)
 │       ├── generators/          # Entity-specific data generators
+│       ├── ingestion/           # Phase 2 metadata and landing pipelines
+│       ├── transforms/          # Phase 4 Silver PySpark transforms
+│       ├── gold/                # Phase 5 Gold models and business marts
+│       ├── warehouse/           # Phase 6 Snowflake loading
+│       ├── orchestration/       # Phase 8 reconciliation reporting
+│       ├── spark/               # Spark session management
 │       ├── loaders/             # PostgreSQL loader
 │       ├── pipeline/            # Orchestration logic
 │       └── utils/               # Logging and helpers
@@ -176,6 +237,8 @@ retail-lakehouse-data-platform/
 │
 └── data/
     ├── generated/               # Runtime output (gitignored)
+    ├── file_sources/            # Phase 2 CSV/JSON staging (gitignored)
+    ├── lakehouse/               # Phase 2 local ADLS mirror (gitignored)
     └── samples/                 # Small demo files (optional)
 ```
 
@@ -186,10 +249,13 @@ retail-lakehouse-data-platform/
 | Phase | Scope                                                              | Status      |
 |-------|--------------------------------------------------------------------|-------------|
 | **1** | Synthetic data, PostgreSQL, Docker, tests                          | ✅ Complete |
-| 2     | CSV/JSON sources, Azure Data Factory, ADLS ingestion               | Planned     |
-| 3     | Databricks Medallion (Bronze/Silver/Gold), Delta Lake features     | Planned     |
-| 4     | Snowflake load, dbt staging/intermediate/marts, tests, snapshots   | Planned     |
-| 5     | Airflow orchestration, reconciliation, GitHub Actions, full docs   | Planned     |
+| **2** | CSV/JSON sources, Azure Data Factory, ADLS ingestion               | ✅ Complete |
+| **4** | PySpark Silver transforms, quarantine, Delta MERGE                | ✅ Complete |
+| **5** | Delta Lake Gold models, dimensions, facts, business metric marts | ✅ Complete |
+| **6** | Snowflake setup and Gold table loading into RAW schema            | ✅ Complete |
+| **7** | dbt staging, intermediate, and mart models with tests             | ✅ Complete |
+| **8** | Airflow orchestration, reconciliation, GitHub Actions CI          | ✅ Complete |
+| **9** | Testing, CI/CD quality gates, runbooks, contributor documentation | ✅ Complete |
 
 ---
 
@@ -277,6 +343,249 @@ Connect from your host using port **55432** (see `.env`).
 
 ---
 
+## Quick Start — Phase 2
+
+### 1. Ensure Phase 1 data is loaded
+
+```bash
+docker compose up -d
+python scripts/load_postgres.py --truncate --customers 100 --products 50 --orders 500
+python scripts/validate_phase1.py
+```
+
+### 2. Generate file sources (CSV + JSON)
+
+```bash
+python scripts/generate_file_sources.py --products 50 --customers 100
+```
+
+Output: `data/file_sources/product_updates/` and `data/file_sources/website_events/`
+
+### 3. Run local ingestion (ADF mirror)
+
+```bash
+python scripts/run_local_ingestion.py
+```
+
+Lands partitioned data to `data/lakehouse/raw/bronze/`
+
+### 4. Validate Phase 2
+
+```bash
+python scripts/validate_phase2.py
+```
+
+### 5. Deploy to Azure (optional)
+
+Import ADF artifacts from `adf/` into your Data Factory instance. See [adf/README.md](adf/README.md) and [docs/phase2-adf-ingestion.md](docs/phase2-adf-ingestion.md).
+
+To upload local landing files to Azure Storage:
+
+```bash
+python scripts/run_local_ingestion.py --upload-azure
+```
+
+Requires `AZURE_STORAGE_ACCOUNT` and Azure credentials in `.env`.
+
+---
+
+## Quick Start — Phase 4
+
+### 1. Ensure Bronze data exists (Phase 2)
+
+```bash
+python scripts/run_local_ingestion.py
+python scripts/validate_phase2.py
+```
+
+### 2. Run Silver transforms
+
+```bash
+python scripts/run_silver_transforms.py
+```
+
+### 3. Validate Silver + quarantine
+
+```bash
+python scripts/validate_silver.py
+pytest tests/unit/transforms/
+```
+
+See [docs/phase4-silver-transforms.md](docs/phase4-silver-transforms.md) for data quality rules and Databricks deployment notes.
+
+> **Requires Java 11+** for local Spark execution.
+
+---
+
+## Quick Start — Phase 5
+
+### 1. Ensure Silver tables exist (Phase 4)
+
+```bash
+python scripts/run_silver_transforms.py
+python scripts/validate_silver.py
+```
+
+### 2. Run Gold models
+
+```bash
+python scripts/run_gold_models.py
+```
+
+### 3. Validate Gold marts
+
+```bash
+python scripts/validate_gold.py
+pytest tests/unit/gold/
+```
+
+See [docs/phase5-gold-models.md](docs/phase5-gold-models.md) for the Gold data model and business metrics.
+
+> **Requires Java 11+** for local Spark execution.
+
+---
+
+## Quick Start — Phase 6
+
+### 1. Configure Snowflake credentials
+
+```bash
+cp .env.example .env
+# Set SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PASSWORD, etc.
+```
+
+### 2. Ensure Gold tables exist (Phase 5)
+
+```bash
+python scripts/run_gold_models.py
+python scripts/validate_gold.py
+```
+
+### 3. Provision Snowflake database and schema
+
+```bash
+python scripts/setup_snowflake.py
+```
+
+### 4. Load Gold tables into Snowflake
+
+```bash
+python scripts/run_snowflake_load.py
+```
+
+### 5. Validate Snowflake row counts
+
+```bash
+python scripts/validate_snowflake.py
+pytest tests/unit/warehouse/
+```
+
+See [docs/phase6-snowflake-load.md](docs/phase6-snowflake-load.md) for setup SQL, load modes, and deployment notes.
+
+> **Requires Java 11+** for reading Gold Delta tables. Snowflake credentials required for setup and load (use `--dry-run` to validate Gold sources only).
+
+---
+
+## Quick Start — Phase 7
+
+### 1. Ensure Snowflake RAW tables exist (Phase 6)
+
+```bash
+python scripts/run_snowflake_load.py
+python scripts/validate_snowflake.py
+```
+
+### 2. Install dbt
+
+```bash
+pip install -r requirements-dbt.txt
+```
+
+### 3. Create dbt schemas
+
+```bash
+python scripts/setup_dbt_schemas.py
+```
+
+### 4. Run dbt models
+
+```bash
+python scripts/run_dbt_models.py
+```
+
+### 5. Validate
+
+```bash
+python scripts/validate_dbt.py --compile-only
+python scripts/validate_dbt.py
+pytest tests/unit/dbt/
+```
+
+See [docs/phase7-dbt-models.md](docs/phase7-dbt-models.md) for model inventory, tests, and deployment notes.
+
+---
+
+## Quick Start — Phase 8
+
+### 1. Generate Airflow Fernet key
+
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+# Add output to .env as AIRFLOW__CORE__FERNET_KEY
+```
+
+### 2. Start Airflow (Docker)
+
+```bash
+docker compose --profile airflow up -d
+```
+
+Airflow UI: **http://localhost:8080** (default `admin` / `admin`)
+
+### 3. Run setup DAG (once)
+
+Unpause and trigger `retail_platform_setup` in the Airflow UI.
+
+### 4. Run daily pipeline
+
+Unpause `retail_daily_pipeline` or trigger manually.
+
+### 5. Reconciliation report
+
+```bash
+python scripts/run_reconciliation.py
+pytest tests/unit/airflow/ tests/unit/orchestration/
+```
+
+See [docs/phase8-airflow-orchestration.md](docs/phase8-airflow-orchestration.md) for DAG details, Docker services, and CI setup.
+
+---
+
+## Quick Start — Phase 9
+
+### 1. Install dev tooling
+
+```bash
+pip install -r requirements-dev.txt
+pre-commit install   # optional
+```
+
+### 2. Run local CI
+
+```bash
+python scripts/run_ci_local.py
+```
+
+### 3. View CI pipeline
+
+GitHub Actions workflow: `.github/workflows/ci.yml`
+
+Jobs: `lint` → `typecheck` → `test` → `test-spark` → `coverage` → `dbt` → `airflow`
+
+See [docs/phase9-testing-cicd-docs.md](docs/phase9-testing-cicd-docs.md) and [docs/runbooks/](docs/runbooks/) for full documentation.
+
+---
+
 ## Configuration
 
 | Source                    | Purpose                                           |
@@ -284,6 +593,10 @@ Connect from your host using port **55432** (see `.env`).
 | `.env`                    | Secrets and runtime overrides (never committed)   |
 | `config/data_generation.yaml` | Distributions, categories, default volumes  |
 | `config/postgres_tables.yaml` | Table names, batch size, source system label  |
+| `config/silver_transforms.yaml` | Phase 4 Silver DQ rules and entity config |
+| `config/gold_models.yaml` | Phase 5 Gold dimensions, facts, marts, business rules |
+| `config/snowflake_load.yaml` | Phase 6 Snowflake load order, modes, manifest paths |
+| `dbt/dbt_project.yml` | Phase 7 dbt project config, vars, model materializations |
 
 **Environment variables** override YAML defaults for volumes and date ranges:
 
@@ -357,11 +670,31 @@ All tables include `created_at`, `source_system`, and (where applicable) `update
 ## Running Tests
 
 ```bash
-pytest
+# Fast unit tests (no Java required)
+pytest -m "not spark" -q
+
+# Spark tests (Java 17+ required)
+pytest -m spark -q
+
+# Full suite with coverage (60% minimum)
 pytest --cov=retail_lakehouse --cov-report=term-missing
+
+# Local CI pipeline (lint + typecheck + tests + coverage)
+python scripts/run_ci_local.py
 ```
 
-Tests cover generators, referential integrity, reproducibility, configuration loading, and CSV export.
+| Suite | Location | Requires |
+|-------|----------|----------|
+| Generators & pipeline | `tests/unit/test_*.py` | Python only |
+| Silver transforms | `tests/unit/transforms/` | Java + PySpark |
+| Gold models | `tests/unit/gold/` | Java + PySpark |
+| Snowflake load | `tests/unit/warehouse/` | Java + PySpark |
+| dbt project | `tests/unit/dbt/` | Python + PyYAML |
+| Airflow DAGs | `tests/unit/airflow/` | Python (+ Airflow for import test) |
+| Script smoke | `tests/unit/scripts/` | Python only |
+| Config integration | `tests/integration/` | Python only |
+
+See [docs/phase9-testing-cicd-docs.md](docs/phase9-testing-cicd-docs.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
@@ -392,9 +725,9 @@ Tests cover generators, referential integrity, reproducibility, configuration lo
 
 ---
 
-## Business Metrics (Future Phases)
+## Business Metrics (Phase 5 Gold)
 
-The Gold layer and dbt marts will deliver:
+The Gold layer delivers analytics-ready marts with:
 
 - Daily and monthly revenue
 - Net revenue after cancellations and refunds
@@ -403,18 +736,26 @@ The Gold layer and dbt marts will deliver:
 - Repeat purchase rate
 - Cancellation and payment failure rates
 - Product category performance
-- Revenue by country
+- Revenue by country and customer segment
 - Monthly active customers
 - New vs. returning customers
 
-**Target marts:** `mart_daily_sales`, `mart_monthly_revenue`, `mart_customer_lifetime_value`, `mart_product_performance`, `mart_customer_segments`
+**Gold marts:** `mart_daily_sales`, `mart_monthly_revenue`, `mart_customer_lifetime_value`, `mart_product_performance`, `mart_customer_segments`
+
+Phase 7 delivers these marts in **dbt** (`RETAIL_DW.MARTS`) with staging and intermediate layers, plus dbt tests and RAW reconciliation.
+
+Phase 8 orchestrates the full pipeline with **Apache Airflow** DAGs and cross-layer **reconciliation** reports.
+
+Phase 9 adds **CI/CD quality gates**, expanded tests, runbooks, and contributor documentation — making the platform portfolio-ready.
 
 ---
 
 ## Contributing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, quality gates, and PR guidelines.
+
 1. Create a feature branch from `main`
-2. Run `pytest` before opening a PR
+2. Run `python scripts/run_ci_local.py` before opening a PR
 3. Follow existing patterns: type hints, docstrings, config-driven design
 4. Never commit `.env` or generated data
 
@@ -422,7 +763,7 @@ The Gold layer and dbt marts will deliver:
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) (to be added in a future phase).
+MIT License — see [LICENSE](LICENSE).
 
 ---
 

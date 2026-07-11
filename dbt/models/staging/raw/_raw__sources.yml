@@ -1,0 +1,71 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Gold tables loaded into Snowflake RAW schema (Phase 6).
+    database: "{{ env_var('SNOWFLAKE_DATABASE', 'RETAIL_DW') }}"
+    schema: RAW
+    tables:
+      - name: dim_date
+        description: Conformed calendar dimension.
+        columns:
+          - name: date_key
+            tests: [unique, not_null]
+      - name: dim_customers
+        description: Customer dimension.
+        columns:
+          - name: customer_key
+            tests: [unique, not_null]
+      - name: dim_products
+        description: Product catalog dimension.
+        columns:
+          - name: product_key
+            tests: [unique, not_null]
+      - name: dim_country
+        description: Country lookup dimension.
+        columns:
+          - name: country_key
+            tests: [unique, not_null]
+      - name: fct_orders
+        description: Order-level facts with revenue flags.
+        columns:
+          - name: order_key
+            tests: [unique, not_null]
+          - name: customer_key
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'dim_customers')
+                  field: customer_key
+      - name: fct_order_items
+        description: Order line-item facts.
+        columns:
+          - name: order_item_key
+            tests: [unique, not_null]
+          - name: order_key
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'fct_orders')
+                  field: order_key
+      - name: fct_payments
+        description: Payment transaction facts.
+        columns:
+          - name: payment_key
+            tests: [unique, not_null]
+          - name: order_key
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'fct_orders')
+                  field: order_key
+      - name: mart_daily_sales
+        description: RAW Gold daily sales mart (reconciliation baseline).
+      - name: mart_monthly_revenue
+        description: RAW Gold monthly revenue mart (reconciliation baseline).
+      - name: mart_customer_lifetime_value
+        description: RAW Gold CLV mart (reconciliation baseline).
+      - name: mart_product_performance
+        description: RAW Gold product mart (reconciliation baseline).
+      - name: mart_customer_segments
+        description: RAW Gold segment mart (reconciliation baseline).

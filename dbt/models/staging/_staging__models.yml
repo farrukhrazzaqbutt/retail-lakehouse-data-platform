@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: stg_raw__dim_date
+    description: Staging view over RAW dim_date.
+  - name: stg_raw__dim_customers
+    description: Staging view over RAW dim_customers.
+  - name: stg_raw__dim_products
+    description: Staging view over RAW dim_products.
+  - name: stg_raw__dim_country
+    description: Staging view over RAW dim_country.
+  - name: stg_raw__fct_orders
+    description: Staging view over RAW fct_orders.
+  - name: stg_raw__fct_order_items
+    description: Staging view over RAW fct_order_items.
+  - name: stg_raw__fct_payments
+    description: Staging view over RAW fct_payments.

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "factoryName": { "value": "adf-retail-lakehouse-dev" },
+    "postgresHost": { "value": "YOUR_POSTGRES_HOST" },
+    "postgresPort": { "value": "55432" },
+    "postgresDatabase": { "value": "retail_db" },
+    "postgresUser": { "value": "retail_user" },
+    "postgresPassword": { "value": "REPLACE_IN_KEY_VAULT_OR_SECURE_PARAM" },
+    "storageAccountUrl": { "value": "https://YOUR_STORAGE_ACCOUNT.dfs.core.windows.net" },
+    "rawFilesystem": { "value": "raw" },
+    "sourceFileSharePath": { "value": "landing/file_sources" }
+  }
+}

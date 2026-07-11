@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import numpy as np
 import pandas as pd
@@ -29,10 +29,12 @@ class BaseGenerator(ABC):
 
     def audit_timestamp(self) -> datetime:
         """Return a deterministic UTC timestamp derived from the configured seed."""
-        base = datetime(2024, 1, 1, tzinfo=timezone.utc)
+        base = datetime(2024, 1, 1, tzinfo=UTC)
         return base.replace(second=int(self.config.seed % 60))
 
-    def _add_audit_columns(self, df: pd.DataFrame, include_updated_at: bool = True) -> pd.DataFrame:
+    def _add_audit_columns(
+        self, df: pd.DataFrame, include_updated_at: bool = True
+    ) -> pd.DataFrame:
         """
         Append standard audit columns used by the PostgreSQL schema.
 

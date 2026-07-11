@@ -85,7 +85,9 @@ class DataGenerationPipeline:
         logger.info("Data generation completed successfully")
         return datasets
 
-    def export_csv(self, datasets: GeneratedDatasets, output_dir: Path | None = None) -> None:
+    def export_csv(
+        self, datasets: GeneratedDatasets, output_dir: Path | None = None
+    ) -> None:
         """
         Export generated datasets to CSV files.
 

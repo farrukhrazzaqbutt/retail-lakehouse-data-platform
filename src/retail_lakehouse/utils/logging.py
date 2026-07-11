@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Optional
 
 
 def configure_logging(level: str = "INFO") -> None:
@@ -24,7 +23,7 @@ def configure_logging(level: str = "INFO") -> None:
     )
 
 
-def get_logger(name: str, level: Optional[str] = None) -> logging.Logger:
+def get_logger(name: str, level: str | None = None) -> logging.Logger:
     """
     Return a module logger.
 

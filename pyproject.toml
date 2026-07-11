@@ -17,7 +17,48 @@ where = ["src"]
 pythonpath = ["src"]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+markers = [
+    "spark: tests requiring Java and PySpark",
+    "integration: tests requiring external services",
+]
 
 [tool.coverage.run]
 source = ["src/retail_lakehouse"]
 omit = ["tests/*"]
+
+[tool.coverage.report]
+fail_under = 60
+show_missing = true
+skip_empty = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["E402", "I001"]
+"airflow/dags/*" = ["E402", "I001"]
+"tests/*" = ["E402", "I001"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src/retail_lakehouse"]
+ignore_missing_imports = true
+warn_unused_ignores = false
+warn_return_any = false
+check_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = ["numpy", "numpy.*", "pandas", "pandas.*", "pyspark", "pyspark.*"]
+follow_imports = "skip"
+ignore_errors = true

@@ -1,0 +1,31 @@
+{
+  "name": "DS_Postgres_Table",
+  "properties": {
+    "description": "Parameterized PostgreSQL source table dataset.",
+    "linkedServiceName": {
+      "referenceName": "LS_PostgreSQL_Retail",
+      "type": "LinkedServiceReference",
+      "parameters": {
+        "postgresHost": "@dataset().postgresHost",
+        "postgresPort": "@dataset().postgresPort",
+        "postgresDatabase": "@dataset().postgresDatabase",
+        "postgresUser": "@dataset().postgresUser"
+      }
+    },
+    "parameters": {
+      "schemaName": { "type": "String", "defaultValue": "retail" },
+      "tableName": { "type": "String" },
+      "postgresHost": { "type": "String" },
+      "postgresPort": { "type": "Int" },
+      "postgresDatabase": { "type": "String" },
+      "postgresUser": { "type": "String" }
+    },
+    "annotations": ["phase2", "postgres"],
+    "type": "PostgreSqlTable",
+    "schema": ["@dataset().schemaName"],
+    "typeProperties": {
+      "schema": "@dataset().schemaName",
+      "table": "@dataset().tableName"
+    }
+  }
+}

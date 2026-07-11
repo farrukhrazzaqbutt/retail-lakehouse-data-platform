@@ -66,9 +66,7 @@ class OrderItemGenerator(BaseGenerator):
                     discount_pct = float(
                         self.rng.uniform(0.05, self.config.max_discount_pct)
                     )
-                line_total = round_currency(
-                    unit_price * quantity * (1 - discount_pct)
-                )
+                line_total = round_currency(unit_price * quantity * (1 - discount_pct))
 
                 records.append(
                     {

@@ -1,0 +1,34 @@
+# Snowflake load configuration (Phase 6)
+# Loads Gold Delta tables into Snowflake RAW schema.
+
+snowflake_load:
+  gold_base_path: gold
+  load_mode: overwrite
+  manifest_base_path: warehouse/_manifests
+  auto_create_tables: true
+  uppercase_identifiers: true
+
+  # Load order respects dimension → fact → mart dependencies
+  load_order:
+    - layer: dimensions
+      tables:
+        - dim_date
+        - dim_country
+        - dim_customers
+        - dim_products
+    - layer: facts
+      tables:
+        - fct_orders
+        - fct_order_items
+        - fct_payments
+    - layer: marts
+      tables:
+        - mart_daily_sales
+        - mart_monthly_revenue
+        - mart_customer_lifetime_value
+        - mart_product_performance
+        - mart_customer_segments
+
+local_dev:
+  gold_root: ./data/lakehouse/gold
+  manifest_root: ./data/lakehouse/warehouse

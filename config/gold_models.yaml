@@ -1,0 +1,77 @@
+# Gold layer configuration (Phase 5)
+# Curated dimensions, facts, and business metric marts from Silver Delta tables.
+
+gold:
+  gold_base_path: gold
+  silver_base_path: silver
+  processed_at_column: gold_loaded_at
+
+  dimensions:
+    - dim_customers
+    - dim_products
+    - dim_date
+    - dim_country
+
+  facts:
+    - fct_orders
+    - fct_order_items
+    - fct_payments
+
+  marts:
+    - mart_daily_sales
+    - mart_monthly_revenue
+    - mart_customer_lifetime_value
+    - mart_product_performance
+    - mart_customer_segments
+
+date_dimension:
+  start_date: "2023-01-01"
+  end_date: "2026-12-31"
+
+business_rules:
+  completed_statuses: [completed]
+  cancelled_statuses: [cancelled]
+  refunded_statuses: [refunded]
+  successful_payment_statuses: [succeeded]
+  failed_payment_statuses: [failed]
+
+metrics:
+  mart_daily_sales:
+    - gross_revenue
+    - net_revenue
+    - order_count
+    - cancelled_order_count
+    - refunded_order_count
+    - average_order_value
+    - payment_failure_count
+    - payment_failure_rate
+  mart_monthly_revenue:
+    - gross_revenue
+    - net_revenue
+    - order_count
+    - monthly_active_customers
+    - new_customers
+    - returning_customers
+  mart_customer_lifetime_value:
+    - total_orders
+    - total_revenue
+    - net_revenue
+    - avg_order_value
+    - repeat_purchase_rate
+  mart_product_performance:
+    - total_quantity_sold
+    - gross_revenue
+    - net_revenue
+    - revenue_by_category
+  mart_customer_segments:
+    - customer_count
+    - total_revenue
+    - net_revenue
+    - avg_order_value
+    - repeat_purchase_rate
+    - cancellation_rate
+    - revenue_by_country
+
+local_dev:
+  silver_root: ./data/lakehouse/silver
+  gold_root: ./data/lakehouse/gold
