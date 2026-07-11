@@ -1,0 +1,79 @@
+"""Shared pytest fixtures."""
+
+from __future__ import annotations
+
+from datetime import date
+from pathlib import Path
+
+import pytest
+
+from retail_lakehouse.config.settings import (
+    CountryConfig,
+    DataGenerationConfig,
+    ProductCategoryConfig,
+    WeightedOption,
+)
+from retail_lakehouse.pipeline.data_generation import DataGenerationPipeline
+
+
+@pytest.fixture
+def small_config() -> DataGenerationConfig:
+    """Minimal configuration for fast unit tests."""
+    return DataGenerationConfig(
+        seed=42,
+        num_customers=25,
+        num_products=10,
+        num_orders=40,
+        order_start_date=date(2024, 1, 1),
+        order_end_date=date(2024, 6, 30),
+        customer_segments=[
+            WeightedOption(name="budget", weight=0.4),
+            WeightedOption(name="standard", weight=0.4),
+            WeightedOption(name="premium", weight=0.2),
+        ],
+        order_statuses=[
+            WeightedOption(name="completed", weight=0.7),
+            WeightedOption(name="cancelled", weight=0.1),
+            WeightedOption(name="refunded", weight=0.1),
+            WeightedOption(name="pending", weight=0.05),
+            WeightedOption(name="failed", weight=0.05),
+        ],
+        payment_methods=[
+            WeightedOption(name="credit_card", weight=0.6),
+            WeightedOption(name="paypal", weight=0.4),
+        ],
+        payment_statuses=[
+            WeightedOption(name="succeeded", weight=0.9),
+            WeightedOption(name="failed", weight=0.1),
+        ],
+        product_categories=[
+            ProductCategoryConfig(
+                category="Electronics",
+                subcategories=["Phones", "Laptops"],
+                price_range=(50.0, 500.0),
+                weight=0.6,
+            ),
+            ProductCategoryConfig(
+                category="Clothing",
+                subcategories=["Men", "Women"],
+                price_range=(20.0, 150.0),
+                weight=0.4,
+            ),
+        ],
+        countries=[
+            CountryConfig(code="US", name="United States", weight=0.6),
+            CountryConfig(code="GB", name="United Kingdom", weight=0.4),
+        ],
+        min_items_per_order=1,
+        max_items_per_order=3,
+        discount_probability=0.2,
+        max_discount_pct=0.25,
+        output_dir=Path("./data/generated"),
+        sample_output_dir=Path("./data/samples"),
+    )
+
+
+@pytest.fixture
+def generated_datasets(small_config: DataGenerationConfig):
+    """Run the full generation pipeline with small volumes."""
+    return DataGenerationPipeline(small_config).run()

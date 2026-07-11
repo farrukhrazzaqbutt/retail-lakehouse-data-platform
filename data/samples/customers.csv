@@ -1,0 +1,21 @@
+customer_id,email,first_name,last_name,phone,country_code,country_name,city,postal_code,customer_segment,signup_date,is_active,created_at,updated_at,source_system
+1,danielle.johnson.1@example-retail.com,Danielle,Johnson,232.318.1960,CA,Canada,East William,03979,standard,2024-03-03,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+2,anna.baldwin.2@example-retail.com,Anna,Baldwin,(337)894-0265x42351,FR,France,West Melanieview,06196,budget,2025-04-26,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+3,jessica.herrera.3@example-retail.com,Jessica,Herrera,584-695-9310,CA,Canada,Port Jesseville,50324,standard,2024-08-11,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+4,joshua.reid.4@example-retail.com,Joshua,Reid,(555)434-1928,GB,United Kingdom,Grayside,29286,standard,2024-07-20,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+5,gabrielle.cameron.5@example-retail.com,Gabrielle,Cameron,505.964.1395,FR,France,Wilkersonmouth,19227,premium,2023-03-28,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+6,joseph.wright.6@example-retail.com,Joseph,Wright,+1-949-369-6532,US,United States,Port Danielburgh,89693,standard,2025-05-22,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+7,robert.brown.7@example-retail.com,Robert,Brown,+1-878-448-0184x514,AU,Australia,Smithview,66113,standard,2024-08-15,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+8,kathleen.romero.8@example-retail.com,Kathleen,Romero,+1-948-293-2528x8095,GB,United Kingdom,West Natashaport,31886,premium,2023-06-15,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+9,brian.humphrey.9@example-retail.com,Brian,Humphrey,671-882-2782,CA,Canada,New Karina,90923,budget,2023-05-03,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+10,james.collins.10@example-retail.com,James,Collins,587.213.3150x983,US,United States,Lake Crystalbury,09335,budget,2024-08-03,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+11,rebecca.heath.11@example-retail.com,Rebecca,Heath,334.373.8299x73763,CA,Canada,Gomezchester,61714,premium,2023-04-21,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+12,michelle.brown.12@example-retail.com,Michelle,Brown,4658133387,GB,United Kingdom,West Steven,10381,standard,2023-06-02,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+13,scott.callahan.13@example-retail.com,Scott,Callahan,908-501-3267,US,United States,Barreraburgh,50173,standard,2025-05-04,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+14,aaron.myers.14@example-retail.com,Aaron,Myers,268-272-3430x9805,FR,France,Shawhaven,21136,standard,2024-12-07,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+15,brian.romero.15@example-retail.com,Brian,Romero,291-336-1939,FR,France,Sandovalshire,69023,budget,2023-10-16,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+16,leslie.green.16@example-retail.com,Leslie,Green,946.324.7510,AU,Australia,New Jasonview,17862,standard,2024-05-03,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+17,sarah.ibarra.17@example-retail.com,Sarah,Ibarra,(442)678-4980x841,FR,France,North Juliaberg,36198,budget,2024-01-15,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+18,juan.clark.18@example-retail.com,Juan,Clark,248.274.0164,US,United States,Kellieview,21679,standard,2024-06-16,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+19,joyce.arnold.19@example-retail.com,Joyce,Arnold,+1-401-812-8059,FR,France,North Kyle,05730,standard,2024-10-26,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+20,rachel.clark.20@example-retail.com,Rachel,Clark,+1-815-586-9232x26025,DE,Germany,Erikville,50641,budget,2024-01-23,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator

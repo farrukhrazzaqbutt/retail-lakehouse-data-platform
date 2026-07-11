@@ -1,0 +1,119 @@
+# Data generation defaults. Override via environment variables or CLI flags.
+seed: 42
+
+volumes:
+  customers: 5000
+  products: 500
+  orders: 25000
+
+date_range:
+  start: "2023-01-01"
+  end: "2025-06-30"
+
+# Realistic business distributions
+customer_segments:
+  - name: budget
+    weight: 0.35
+  - name: standard
+    weight: 0.45
+  - name: premium
+    weight: 0.20
+
+order_statuses:
+  - status: completed
+    weight: 0.72
+  - status: cancelled
+    weight: 0.10
+  - status: refunded
+    weight: 0.08
+  - status: pending
+    weight: 0.06
+  - status: failed
+    weight: 0.04
+
+payment_methods:
+  - method: credit_card
+    weight: 0.55
+  - method: debit_card
+    weight: 0.20
+  - method: paypal
+    weight: 0.15
+  - method: bank_transfer
+    weight: 0.07
+  - method: gift_card
+    weight: 0.03
+
+payment_statuses:
+  - status: succeeded
+    weight: 0.88
+  - status: failed
+    weight: 0.07
+  - status: pending
+    weight: 0.03
+  - status: refunded
+    weight: 0.02
+
+product_categories:
+  - category: Electronics
+    subcategories: [Smartphones, Laptops, Tablets, Accessories, Audio]
+    price_range: [29.99, 1999.99]
+    weight: 0.25
+  - category: Clothing
+    subcategories: [Men, Women, Kids, Shoes, Accessories]
+    price_range: [14.99, 299.99]
+    weight: 0.22
+  - category: Home & Garden
+    subcategories: [Furniture, Kitchen, Decor, Outdoor, Storage]
+    price_range: [9.99, 899.99]
+    weight: 0.18
+  - category: Sports
+    subcategories: [Fitness, Outdoor, Team Sports, Cycling, Swimming]
+    price_range: [12.99, 599.99]
+    weight: 0.15
+  - category: Beauty
+    subcategories: [Skincare, Makeup, Haircare, Fragrance, Tools]
+    price_range: [7.99, 199.99]
+    weight: 0.12
+  - category: Books
+    subcategories: [Fiction, Non-Fiction, Children, Textbooks, Comics]
+    price_range: [4.99, 79.99]
+    weight: 0.08
+
+countries:
+  - code: US
+    name: United States
+    weight: 0.35
+  - code: GB
+    name: United Kingdom
+    weight: 0.15
+  - code: DE
+    name: Germany
+    weight: 0.12
+  - code: FR
+    name: France
+    weight: 0.10
+  - code: CA
+    name: Canada
+    weight: 0.08
+  - code: AU
+    name: Australia
+    weight: 0.07
+  - code: NL
+    name: Netherlands
+    weight: 0.05
+  - code: ES
+    name: Spain
+    weight: 0.04
+  - code: IT
+    name: Italy
+    weight: 0.04
+
+order_items:
+  min_per_order: 1
+  max_per_order: 6
+  discount_probability: 0.25
+  max_discount_pct: 0.30
+
+output:
+  csv_encoding: utf-8
+  parquet_compression: snappy

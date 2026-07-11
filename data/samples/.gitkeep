@@ -1,0 +1,2 @@
+# Small sample CSV files for documentation and quick demos.
+# Generated via: python scripts/generate_data.py --customers 20 --products 10 --orders 50

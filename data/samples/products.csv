@@ -1,0 +1,11 @@
+product_id,sku,product_name,category,subcategory,brand,unit_price,unit_cost,currency,is_active,created_at,updated_at,source_system
+1,SKU-000001,"Rodriguez, Figueroa and Sanchez Cycling Chair",Sports,Cycling,"Rodriguez, Figueroa and Sanchez",516.99,295.23,USD,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+2,SKU-000002,"Garcia, Yang and Gardner Children Performance",Books,Children,"Garcia, Yang and Gardner",62.08,33.25,USD,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+3,SKU-000003,Johnson-Davis Kids Early,Clothing,Kids,Johnson-Davis,279.12,165.37,USD,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+4,SKU-000004,"Guzman, Hoffman and Baldwin Women Science",Clothing,Women,"Guzman, Hoffman and Baldwin",79.75,50.1,USD,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+5,SKU-000005,"Barnes, Cole and Ramirez Makeup True",Beauty,Makeup,"Barnes, Cole and Ramirez",153.54,108.74,USD,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+6,SKU-000006,Blake and Sons Fragrance Save,Beauty,Fragrance,Blake and Sons,157.44,121.57,USD,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+7,SKU-000007,Peterson-Moore Tablets Source,Electronics,Tablets,Peterson-Moore,1375.6,759.46,USD,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+8,SKU-000008,Garcia-James Men Her,Clothing,Men,Garcia-James,120.57,79.84,USD,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+9,SKU-000009,Munoz-Roman Accessories Show,Electronics,Accessories,Munoz-Roman,477.0,277.65,USD,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
+10,SKU-000010,Herrera-Dudley Haircare Human,Beauty,Haircare,Herrera-Dudley,142.44,103.28,USD,True,2024-01-01 00:00:42+00:00,2024-01-01 00:00:42+00:00,retail_postgres_generator
