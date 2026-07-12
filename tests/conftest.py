@@ -7,18 +7,17 @@ from pathlib import Path
 
 import pytest
 
-from retail_lakehouse.config.settings import (
-    CountryConfig,
-    DataGenerationConfig,
-    ProductCategoryConfig,
-    WeightedOption,
-)
-from retail_lakehouse.pipeline.data_generation import DataGenerationPipeline
-
 
 @pytest.fixture
-def small_config() -> DataGenerationConfig:
+def small_config():
     """Minimal configuration for fast unit tests."""
+    from retail_lakehouse.config.settings import (
+        CountryConfig,
+        DataGenerationConfig,
+        ProductCategoryConfig,
+        WeightedOption,
+    )
+
     return DataGenerationConfig(
         seed=42,
         num_customers=25,
@@ -74,14 +73,16 @@ def small_config() -> DataGenerationConfig:
 
 
 @pytest.fixture
-def generated_datasets(small_config: DataGenerationConfig):
+def generated_datasets(small_config):
     """Run the full generation pipeline with small volumes."""
+    from retail_lakehouse.pipeline.data_generation import DataGenerationPipeline
+
     return DataGenerationPipeline(small_config).run()
 
 
-@pytest.fixture(scope="session")
-def spark_session(tmp_path_factory):
-    """Create a shared local Spark session for Silver transform tests."""
+@pytest.fixture
+def spark_session(tmp_path):
+    """Create an isolated local Spark session for Delta transform tests."""
     import os
     import shutil
 
@@ -91,9 +92,9 @@ def spark_session(tmp_path_factory):
 
     from retail_lakehouse.spark.session import get_spark_session, stop_spark_session
 
-    warehouse = tmp_path_factory.mktemp("spark-warehouse")
+    warehouse = tmp_path / "spark-warehouse"
     spark = get_spark_session(
-        app_name="retail-lakehouse-tests",
+        app_name=f"retail-lakehouse-tests-{tmp_path.name}",
         warehouse_dir=str(warehouse),
     )
     yield spark
