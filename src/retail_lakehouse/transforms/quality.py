@@ -78,7 +78,7 @@ class DataQualityEngine:
             valid_df[check.child_column] == parent_keys[check.parent_column],
             how="left_anti",
         )
-        if orphans.rdd.isEmpty():
+        if orphans.isEmpty():
             return valid_df, quarantine_df
 
         reason = f"orphan_{check.child_column}_references_{check.parent_entity}.{check.parent_column}"

@@ -61,7 +61,8 @@ def test_validate_entity_routes_nulls_to_quarantine(
     valid, quarantine = engine.validate_entity(df, entity)
     assert valid.count() == 1
     assert quarantine.count() == 1
-    assert "null_email" in quarantine.collect()[0][config.rejection_reason_column]
+    row = quarantine.collect()[0].asDict()
+    assert "null_email" in row[config.rejection_reason_column]
 
 
 def test_validate_entity_rejects_invalid_segment(
@@ -95,7 +96,8 @@ def test_validate_entity_rejects_invalid_segment(
 
     _, quarantine = engine.validate_entity(df, entity)
     assert quarantine.count() == 1
+    row = quarantine.collect()[0].asDict()
     assert (
         "invalid_customer_segment"
-        in quarantine.collect()[0][config.rejection_reason_column]
+        in row[config.rejection_reason_column]
     )

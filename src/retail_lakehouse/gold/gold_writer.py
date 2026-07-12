@@ -50,7 +50,7 @@ class GoldWriter:
             Output path written.
         """
         output_path = self._gold_path(layer, table_name)
-        if df.rdd.isEmpty():
+        if df.isEmpty():
             logger.info("Skipping empty Gold write table=%s", table_name)
             return str(output_path)
 

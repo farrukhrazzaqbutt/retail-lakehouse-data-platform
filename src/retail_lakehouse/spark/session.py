@@ -28,7 +28,7 @@ def get_spark_session(
         SparkSession.builder.appName(app_name)
         .master(master)
         .config("spark.sql.shuffle.partitions", "4")
-        .config("spark.driver.memory", "1g")
+        .config("spark.driver.memory", "2g")
         .config("spark.ui.showConsoleProgress", "false")
         .config("spark.driver.host", "127.0.0.1")
     )

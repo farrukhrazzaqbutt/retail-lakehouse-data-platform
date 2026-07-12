@@ -24,7 +24,7 @@ def deduplicate_latest(
     Returns:
         Deduplicated DataFrame.
     """
-    if df.rdd.isEmpty():
+    if df.isEmpty():
         return df
 
     order_cols = [col for col in config.dedupe_order_columns if col in df.columns]

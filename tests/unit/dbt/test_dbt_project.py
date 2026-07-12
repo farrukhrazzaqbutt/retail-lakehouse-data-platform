@@ -6,7 +6,8 @@ from pathlib import Path
 
 import yaml
 
-DBT_DIR = Path("dbt")
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+DBT_DIR = PROJECT_ROOT / "dbt"
 EXPECTED_STAGING = [
     "stg_raw__dim_date.sql",
     "stg_raw__dim_customers.sql",
@@ -91,7 +92,7 @@ def test_dbt_parse_if_installed() -> None:
 
     env = {
         **os.environ,
-        "DBT_PROFILES_DIR": str(DBT_DIR / "profiles"),
+        "DBT_PROFILES_DIR": str(DBT_DIR / "profiles"),  # absolute via PROJECT_ROOT
         "SNOWFLAKE_ACCOUNT": os.getenv("SNOWFLAKE_ACCOUNT", "xy12345.us-east-1"),
         "SNOWFLAKE_USER": os.getenv("SNOWFLAKE_USER", "placeholder"),
         "SNOWFLAKE_PASSWORD": os.getenv("SNOWFLAKE_PASSWORD", "placeholder"),
