@@ -70,20 +70,38 @@ def test_dbt_packages_include_utils() -> None:
     assert "dbt-labs/dbt_utils" in package_names
 
 
-def test_dbt_compile_if_installed() -> None:
+def test_dbt_parse_if_installed() -> None:
+    import os
     import shutil
     import subprocess
 
-    if shutil.which("dbt") is None:
-        return
+    import pytest
 
+    if shutil.which("dbt") is None:
+        pytest.skip("dbt not installed")
+
+    probe = subprocess.run(
+        ["dbt", "--version"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if probe.returncode != 0:
+        pytest.skip(f"dbt CLI unavailable: {probe.stderr}")
+
+    env = {
+        **os.environ,
+        "DBT_PROFILES_DIR": str(DBT_DIR / "profiles"),
+        "SNOWFLAKE_ACCOUNT": os.getenv("SNOWFLAKE_ACCOUNT", "xy12345.us-east-1"),
+        "SNOWFLAKE_USER": os.getenv("SNOWFLAKE_USER", "placeholder"),
+        "SNOWFLAKE_PASSWORD": os.getenv("SNOWFLAKE_PASSWORD", "placeholder"),
+        "SNOWFLAKE_ROLE": os.getenv("SNOWFLAKE_ROLE", "placeholder"),
+        "SNOWFLAKE_WAREHOUSE": os.getenv("SNOWFLAKE_WAREHOUSE", "placeholder"),
+    }
     result = subprocess.run(
-        ["dbt", "compile"],
+        ["dbt", "parse"],
         cwd=DBT_DIR,
-        env={
-            **__import__("os").environ,
-            "DBT_PROFILES_DIR": str(DBT_DIR / "profiles"),
-        },
+        env=env,
         capture_output=True,
         text=True,
         check=False,

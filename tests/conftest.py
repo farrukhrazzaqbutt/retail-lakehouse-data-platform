@@ -101,10 +101,16 @@ def spark_session(tmp_path_factory):
 
 
 def pytest_collection_modifyitems(items) -> None:
-    """Mark Spark-dependent tests automatically."""
-    spark_paths = ("transforms", "gold", "warehouse")
+    """Mark Spark-dependent tests explicitly by filename."""
+    spark_files = {
+        "test_silver_pipeline.py",
+        "test_quality.py",
+        "test_gold_pipeline.py",
+        "test_snowflake_pipeline.py",
+        "test_snowflake_ddl.py",
+    }
     for item in items:
-        if any(part in str(item.fspath) for part in spark_paths):
+        if item.path.name in spark_files:
             item.add_marker(pytest.mark.spark)
 
 

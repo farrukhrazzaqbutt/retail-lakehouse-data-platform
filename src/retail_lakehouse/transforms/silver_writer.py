@@ -71,7 +71,7 @@ class SilverWriter:
         Returns:
             Output path written.
         """
-        if df.rdd.isEmpty():
+        if df.isEmpty():
             logger.info("No quarantine rows for entity=%s", entity.name)
             return ""
 
@@ -112,7 +112,7 @@ class SilverWriter:
         batch_id: str | None,
     ) -> None:
         """Create or merge records into a Delta table."""
-        if df.rdd.isEmpty():
+        if df.isEmpty():
             logger.info("Skipping empty write layer=%s entity=%s", layer, entity_name)
             return
 

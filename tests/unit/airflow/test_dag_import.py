@@ -19,6 +19,8 @@ from airflow.models import DagBag  # noqa: E402
 def test_dag_bag_imports_without_errors(monkeypatch) -> None:
     """All DAG files should import cleanly in Airflow."""
     monkeypatch.setenv("AIRFLOW_HOME", str(PROJECT_ROOT / "airflow"))
+    monkeypatch.setenv("AIRFLOW__CORE__UNIT_TEST_MODE", "True")
+    monkeypatch.setenv("AIRFLOW__CORE__LOAD_EXAMPLES", "False")
     dag_folder = PROJECT_ROOT / "airflow" / "dags"
     bag = DagBag(
         dag_folder=str(dag_folder),
