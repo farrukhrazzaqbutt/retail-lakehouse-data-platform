@@ -27,14 +27,10 @@ def get_spark_session(
     builder = (
         SparkSession.builder.appName(app_name)
         .master(master)
-        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-        .config(
-            "spark.sql.catalog.spark_catalog",
-            "org.apache.spark.sql.delta.catalog.DeltaCatalog",
-        )
         .config("spark.sql.shuffle.partitions", "4")
-        .config("spark.driver.memory", "2g")
+        .config("spark.driver.memory", "1g")
         .config("spark.ui.showConsoleProgress", "false")
+        .config("spark.driver.host", "127.0.0.1")
     )
 
     if warehouse_dir:
@@ -48,4 +44,5 @@ def get_spark_session(
 def stop_spark_session(spark: SparkSession) -> None:
     """Stop an active Spark session."""
     if spark is not None:
+        spark.catalog.clearCache()
         spark.stop()

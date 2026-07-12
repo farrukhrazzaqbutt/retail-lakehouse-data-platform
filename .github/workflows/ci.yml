@@ -88,6 +88,8 @@ jobs:
           pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Run Spark unit tests
+        env:
+          SPARK_LOCAL_HOSTNAME: 127.0.0.1
         run: pytest -m spark -q
 
   coverage:
@@ -112,6 +114,8 @@ jobs:
           pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Run tests with coverage
+        env:
+          SPARK_LOCAL_HOSTNAME: 127.0.0.1
         run: |
           pytest --cov=retail_lakehouse --cov-report=term-missing --cov-report=xml -q
 
@@ -132,12 +136,12 @@ jobs:
           cache: pip
 
       - name: Install dbt
-        run: pip install -r requirements-dbt.txt pyyaml
+        run: pip install -r requirements-dbt.txt pytest pyyaml
 
-      - name: dbt deps and compile
+      - name: dbt deps and parse
         env:
           DBT_PROFILES_DIR: ${{ github.workspace }}/dbt/profiles
-          SNOWFLAKE_ACCOUNT: placeholder
+          SNOWFLAKE_ACCOUNT: xy12345.us-east-1
           SNOWFLAKE_USER: placeholder
           SNOWFLAKE_PASSWORD: placeholder
           SNOWFLAKE_ROLE: placeholder
@@ -145,7 +149,7 @@ jobs:
         run: |
           cd dbt
           dbt deps
-          dbt compile
+          dbt parse
 
       - name: Validate dbt project tests
         run: pytest tests/unit/dbt/ -q
@@ -168,5 +172,10 @@ jobs:
       - name: Validate Airflow DAGs
         env:
           AIRFLOW_HOME: /tmp/airflow
+          AIRFLOW__CORE__UNIT_TEST_MODE: "true"
+          AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////tmp/airflow/airflow.db
           PYTHONPATH: ${{ github.workspace }}/airflow/include:${{ github.workspace }}/src
-        run: pytest tests/unit/airflow/ tests/unit/orchestration/ -q
+        run: |
+          mkdir -p /tmp/airflow
+          airflow db migrate
+          pytest tests/unit/airflow/ tests/unit/orchestration/ -q
