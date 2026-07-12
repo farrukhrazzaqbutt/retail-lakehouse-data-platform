@@ -24,6 +24,8 @@ def get_spark_session(
     Returns:
         Configured SparkSession with Delta Lake extensions.
     """
+    stop_spark_session(SparkSession.getActiveSession())
+
     builder = (
         SparkSession.builder.appName(app_name)
         .master(master)
@@ -31,6 +33,14 @@ def get_spark_session(
         .config("spark.driver.memory", "2g")
         .config("spark.ui.showConsoleProgress", "false")
         .config("spark.driver.host", "127.0.0.1")
+        .config(
+            "spark.sql.extensions",
+            "io.delta.sql.DeltaSparkSessionExtension",
+        )
+        .config(
+            "spark.sql.catalog.spark_catalog",
+            "org.apache.spark.sql.delta.catalog.DeltaCatalog",
+        )
     )
 
     if warehouse_dir:
@@ -41,7 +51,7 @@ def get_spark_session(
     return spark
 
 
-def stop_spark_session(spark: SparkSession) -> None:
+def stop_spark_session(spark: SparkSession | None) -> None:
     """Stop an active Spark session."""
     if spark is not None:
         spark.catalog.clearCache()

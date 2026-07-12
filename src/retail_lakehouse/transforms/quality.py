@@ -42,13 +42,21 @@ class DataQualityEngine:
         """
         working = self._standardize_columns(df)
         reasons = self._build_failure_reasons(working, entity)
+        annotated = working.withColumn("_rejection_reasons", reasons)
 
-        quarantine = working.withColumn(
-            self.config.rejection_reason_column, reasons
-        ).filter(F.col(self.config.rejection_reason_column) != "")
-        valid = working.withColumn(
-            self.config.rejection_reason_column, F.lit(None)
-        ).filter(~self._has_failures(reasons))
+        quarantine = (
+            annotated.filter(F.col("_rejection_reasons") != "")
+            .withColumn(
+                self.config.rejection_reason_column,
+                F.col("_rejection_reasons"),
+            )
+            .drop("_rejection_reasons")
+        )
+        valid = (
+            annotated.filter(F.col("_rejection_reasons") == "")
+            .withColumn(self.config.rejection_reason_column, F.lit(None))
+            .drop("_rejection_reasons")
+        )
         return valid, quarantine
 
     def apply_referential_integrity(
@@ -121,6 +129,9 @@ class DataQualityEngine:
         checks: list[Column] = []
 
         for column in entity.required_columns:
+            if column not in df.columns:
+                checks.append(F.lit(f"missing_{column}"))
+                continue
             checks.append(
                 F.when(F.col(column).isNull(), F.lit(f"null_{column}")).otherwise(
                     F.lit("")
@@ -203,8 +214,3 @@ class DataQualityEngine:
             ),
             checks,
         )
-
-    @staticmethod
-    def _has_failures(reasons: Column) -> Column:
-        """Return True when any rejection reason is present."""
-        return reasons.isNotNull() & (reasons != "")
