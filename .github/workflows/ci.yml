@@ -91,8 +91,9 @@ jobs:
       - name: Run Spark unit tests
         env:
           SPARK_LOCAL_HOSTNAME: 127.0.0.1
+          SPARK_LOCAL_IP: 127.0.0.1
           JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
-        run: pytest -m spark -q --tb=short
+        run: pytest -m spark -v --tb=short
 
   coverage:
     runs-on: ubuntu-latest

@@ -27,7 +27,6 @@ DIM_DATE_SCHEMA = StructType(
         StructField("day_name", StringType(), False),
         StructField("week_of_year", IntegerType(), False),
         StructField("is_weekend", BooleanType(), False),
-        StructField("gold_loaded_at", TimestampType(), False),
     ]
 )
 

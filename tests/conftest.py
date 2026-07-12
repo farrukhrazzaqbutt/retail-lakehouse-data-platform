@@ -96,6 +96,7 @@ def spark_session():
     warehouse = tempfile.mkdtemp(prefix="retail-lakehouse-spark-")
     spark = get_spark_session(
         app_name="retail-lakehouse-tests",
+        master="local[2]",
         warehouse_dir=warehouse,
     )
     yield spark
