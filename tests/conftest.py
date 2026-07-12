@@ -80,11 +80,12 @@ def generated_datasets(small_config):
     return DataGenerationPipeline(small_config).run()
 
 
-@pytest.fixture
-def spark_session(tmp_path):
-    """Create an isolated local Spark session for Delta transform tests."""
+@pytest.fixture(scope="session")
+def spark_session():
+    """Create one shared Spark session for all Delta transform tests."""
     import os
     import shutil
+    import tempfile
 
     pytest.importorskip("pyspark")
     if not shutil.which("java") and not os.getenv("JAVA_HOME"):
@@ -92,13 +93,14 @@ def spark_session(tmp_path):
 
     from retail_lakehouse.spark.session import get_spark_session, stop_spark_session
 
-    warehouse = tmp_path / "spark-warehouse"
+    warehouse = tempfile.mkdtemp(prefix="retail-lakehouse-spark-")
     spark = get_spark_session(
-        app_name=f"retail-lakehouse-tests-{tmp_path.name}",
-        warehouse_dir=str(warehouse),
+        app_name="retail-lakehouse-tests",
+        warehouse_dir=warehouse,
     )
     yield spark
     stop_spark_session(spark)
+    shutil.rmtree(warehouse, ignore_errors=True)
 
 
 def pytest_collection_modifyitems(items) -> None:

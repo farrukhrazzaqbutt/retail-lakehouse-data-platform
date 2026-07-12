@@ -97,7 +97,4 @@ def test_validate_entity_rejects_invalid_segment(
     _, quarantine = engine.validate_entity(df, entity)
     assert quarantine.count() == 1
     row = quarantine.collect()[0].asDict()
-    assert (
-        "invalid_customer_segment"
-        in row[config.rejection_reason_column]
-    )
+    assert "invalid_customer_segment" in row[config.rejection_reason_column]

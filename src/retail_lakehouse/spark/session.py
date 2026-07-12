@@ -36,10 +36,6 @@ def get_spark_session(
     if warehouse_dir:
         builder = builder.config("spark.sql.warehouse.dir", warehouse_dir)
 
-    active = SparkSession.getActiveSession()
-    if active is not None:
-        active.stop()
-
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
     spark.sparkContext.setLogLevel(os.getenv("SPARK_LOG_LEVEL", "WARN"))
     return spark
@@ -50,3 +46,11 @@ def stop_spark_session(spark: SparkSession) -> None:
     if spark is not None:
         spark.catalog.clearCache()
         spark.stop()
+
+    try:
+        from pyspark import SparkContext
+
+        if SparkContext._active_spark_context is not None:
+            SparkContext._active_spark_context.stop()
+    except Exception:
+        pass
