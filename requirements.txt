@@ -2,7 +2,7 @@
 # Note: use numpy>=2.2 for Python 3.13+ wheel availability
 pandas>=2.2.0,<3.0.0
 numpy>=2.4.6,<3.0.0
-Faker>=40.28.1,<41.0.0
+Faker>=40.31.0,<41.0.0
 
 # Database connectivity
 psycopg2-binary>=2.9.9,<3.0.0
